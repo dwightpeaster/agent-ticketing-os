@@ -1,4 +1,16 @@
-# Agent Ticketing OS
+<p align="center">
+  <img src="assets/agent-ticketing-os-mark.svg" alt="Agent Ticketing OS" width="760" />
+</p>
+
+<p align="center">
+  <strong>Ticket-first workflows for coding agents.</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/dwightpeaster/agent-ticketing-os"><img src="https://img.shields.io/badge/Codex-plugin-111827?logo=openai&logoColor=white" alt="Codex plugin" /></a>
+  <a href="https://github.com/dwightpeaster/agent-ticketing-os"><img src="https://img.shields.io/badge/Agent%20Skills-compatible-2563EB" alt="Agent Skills compatible" /></a>
+  <a href="https://github.com/dwightpeaster/agent-ticketing-os/blob/main/plugins/agent-ticketing-os/.codex-plugin/plugin.json"><img src="https://img.shields.io/badge/version-0.1.0-22C55E" alt="Version 0.1.0" /></a>
+</p>
 
 Agent Ticketing OS is a portable workflow system for coding agents. It helps Claude Code, Codex, and other Agent Skills-compatible tools plan work, create tickets, track implementation, run lightweight sprints, and leave an audit trail inside the repo.
 
@@ -19,6 +31,23 @@ codex plugin add agent-ticketing-os@agent-ticketing-os
 ```
 
 Restart Codex after installing.
+
+## How It Works
+
+```text
+Request -> ticket -> plan -> branch/work -> validation -> handoff
+              |        |        |             |
+              v        v        v             v
+            backlog   sprint   status      audit trail
+```
+
+Agent Ticketing OS gives agents a repeatable operating loop:
+
+1. Capture or select the ticket.
+2. Clarify the goal and acceptance criteria.
+3. Plan the work before implementation.
+4. Track status through the board or sprint.
+5. Record validation, decisions, and handoff notes.
 
 ## First Use
 
