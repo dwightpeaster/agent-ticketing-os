@@ -1,8 +1,4 @@
 <p align="center">
-  <img src="assets/agent-ticketing-os-mark.svg" alt="Agent Ticketing OS" width="760" />
-</p>
-
-<p align="center">
   <strong>Ticket-first workflows for coding agents.</strong>
 </p>
 
