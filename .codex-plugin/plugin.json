@@ -1,0 +1,34 @@
+{
+  "name": "agent-ticketing-os",
+  "version": "0.1.0",
+  "description": "Agent Ticketing OS: repo-local ticketing plus optional agent operating mode for Markdown project workflows.",
+  "author": {
+    "name": "Dwight Peaster"
+  },
+  "license": "MIT",
+  "keywords": [
+    "tickets",
+    "backlog",
+    "issues",
+    "agents",
+    "project-management"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Agent Ticketing OS",
+    "shortDescription": "Ticketing and agent workflow OS",
+    "longDescription": "Install ticketing only, operating mode only, or the full Agent Ticketing OS with backlog, board, sprints, sync, decisions, validation, handoffs, and agent workflow guardrails.",
+    "developerName": "Dwight Peaster",
+    "category": "Productivity",
+    "capabilities": [
+      "Write",
+      "Project Management"
+    ],
+    "defaultPrompt": [
+      "$agent-ticketing-os",
+      "Create a ticket for the failing login flow.",
+      "$agent-operating-init"
+    ],
+    "brandColor": "#2563EB"
+  }
+}

@@ -1,0 +1,8 @@
+interface:
+  display_name: "Agent Ticketing"
+  short_description: "Repo-local backlog and issue tracking"
+  brand_color: "#2563EB"
+  default_prompt: "Use $agent-ticketing to initialize this repo's ticketing system and create a prioritized backlog."
+
+policy:
+  allow_implicit_invocation: true
