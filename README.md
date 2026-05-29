@@ -1,52 +1,28 @@
 # Agent Ticketing OS
 
-Agent Ticketing OS is a portable skill package for coding agents. It gives Claude Code, Codex, and other Agent Skills-compatible tools a shared way to plan work, create tickets, track implementation, run lightweight sprints, and keep an audit trail inside the repo.
+Agent Ticketing OS is a portable workflow system for coding agents. It helps Claude Code, Codex, and other Agent Skills-compatible tools plan work, create tickets, track implementation, run lightweight sprints, and leave an audit trail inside the repo.
 
-The core idea is simple: agents should not freewheel through a codebase. They should create or select a ticket, capture the goal, record acceptance criteria, update status as work moves, and leave enough context for the next agent or human to continue.
+The idea is simple: agents should not drift through a codebase. They should create or select a ticket, capture the goal, define acceptance criteria, update status as work moves, and leave enough context for the next human or agent to continue.
 
-## What It Does
+## Install With Codex
 
-Agent Ticketing OS can be used in three ways:
-
-- **Full OS**: installs ticketing plus stricter agent workflow guardrails.
-- **Ticketing only**: creates local tickets, backlog, board, sprints, and sync config.
-- **Operating only**: adds branch, commit, PR, QA, review, release, security, and handoff rules on top of an existing ticket workflow.
-
-The package includes a deterministic Python engine, [scripts/ticketctl.py](scripts/ticketctl.py), plus skill wrappers that let agents respond to natural language like:
-
-```text
-Create a ticket for the login redirect bug.
-What should we work on next?
-Start a sprint for the dashboard cleanup work.
-Move T-0004 to review.
-Close T-0004 with the tests we ran.
-```
-
-## Install
-
-Codex plugin-style package:
+Add this repository as a Codex plugin marketplace:
 
 ```bash
-git clone https://github.com/dwightpeaster/agent-ticketing-os.git ~/.agents/plugins/agent-ticketing-os
+codex plugin marketplace add dwightpeaster/agent-ticketing-os
 ```
 
-Claude Code skill package:
+Then install the plugin:
 
 ```bash
-git clone https://github.com/dwightpeaster/agent-ticketing-os.git ~/.claude/skills/agent-ticketing-os
+codex plugin add agent-ticketing-os@agent-ticketing-os
 ```
 
-Codex plain skill fallback:
-
-```bash
-git clone https://github.com/dwightpeaster/agent-ticketing-os.git ~/.codex/skills/agent-ticketing-os
-```
-
-Restart the agent after installing.
+Restart Codex after installing.
 
 ## First Use
 
-Use the whole system:
+Install the whole system:
 
 ```text
 $agent-ticketing-os
@@ -64,10 +40,28 @@ Use only the operating layer:
 $agent-operating-init
 ```
 
-For a stricter split-board workflow:
+Use the stricter split-board ticket workflow:
 
 ```text
 $agent-ticketing-init using the strict profile
+```
+
+## What It Does
+
+Agent Ticketing OS has three setup paths:
+
+- **Full OS**: ticketing plus stricter agent workflow guardrails.
+- **Ticketing only**: local tickets, backlog, board, sprints, and sync config.
+- **Operating only**: branch, commit, PR, QA, review, release, security, and handoff rules on top of an existing ticket workflow.
+
+Once installed, agents can respond to normal requests:
+
+```text
+Create a ticket for the login redirect bug.
+What should we work on next?
+Start a sprint for the dashboard cleanup work.
+Move T-0004 to review.
+Close T-0004 with the tests we ran.
 ```
 
 ## Skills Included
@@ -85,11 +79,9 @@ $agent-ticketing-init using the strict profile
 - `$agent-operating-review` - review readiness for tickets, branches, PRs, and handoffs.
 - `$agent-ticketing` - broad fallback skill for clients that load only the root skill.
 
-Legacy short aliases are also included for now: `$new-ticket`, `$ticket-next`, `$ticket-board`, and `$ticket-close`.
-
 ## What Gets Created
 
-Default ticketing setup creates:
+Default ticketing setup creates a local ticket system:
 
 ```text
 .tickets/
@@ -116,24 +108,21 @@ docs/PRODUCT_DECISIONS.md
 
 Agent Operating Mode can add repo workflow docs such as `AGENTS.md`, ticket standards, definition of done, branch workflow, commit workflow, review checklist, QA guide, and handoff templates.
 
-## Direct CLI Use
+## Claude Code
 
-You can run the engine directly from inside any repo:
+Claude Code can use the same skill package by installing the plugin folder as a skill:
 
 ```bash
-python3 ~/.codex/skills/agent-ticketing-os/scripts/ticketctl.py init --root .
-python3 ~/.codex/skills/agent-ticketing-os/scripts/ticketctl.py init --root . --profile strict
-python3 ~/.codex/skills/agent-ticketing-os/scripts/ticketctl.py new --root . --type bug --priority P1 --area auth --title "Fix login redirect loop"
-python3 ~/.codex/skills/agent-ticketing-os/scripts/ticketctl.py next --root .
-python3 ~/.codex/skills/agent-ticketing-os/scripts/ticketctl.py move --root . T-0001 in_progress
-python3 ~/.codex/skills/agent-ticketing-os/scripts/ticketctl.py close --root . T-0001 --resolution "Fixed and tested."
-python3 ~/.codex/skills/agent-ticketing-os/scripts/ticketctl.py doctor --root .
+git clone https://github.com/dwightpeaster/agent-ticketing-os.git
+cp -R agent-ticketing-os/plugins/agent-ticketing-os ~/.claude/skills/agent-ticketing-os
 ```
+
+Restart Claude Code after installing.
 
 ## Design Goals
 
 - Local-first: useful without a hosted service.
-- Agent-friendly: natural language skills plus deterministic file operations.
+- Agent-friendly: natural-language skills plus deterministic file operations.
 - Auditable: tickets, decisions, sprints, tests, and handoffs live in git.
-- Portable: works as a Codex plugin package or plain skill folder.
+- Portable: usable as a Codex plugin package or Agent Skills folder.
 - Extensible: external tracker sync can be added through available tools or MCP connectors.

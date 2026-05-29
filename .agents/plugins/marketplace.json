@@ -1,0 +1,20 @@
+{
+  "name": "agent-ticketing-os",
+  "interface": {
+    "displayName": "Agent Ticketing OS"
+  },
+  "plugins": [
+    {
+      "name": "agent-ticketing-os",
+      "source": {
+        "source": "local",
+        "path": "./plugins/agent-ticketing-os"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
