@@ -23,6 +23,15 @@ This repository is a package of related skills. In clients that support multi-sk
 - `$agent-operating-init` for the optional full agent operating mode.
 - `$agent-operating-review` for non-mutating readiness checks.
 
+In Claude Code, plugin skills are invoked as namespaced slash commands. For example:
+
+- `/agent-ticketing-os:agent-ticketing-os`
+- `/agent-ticketing-os:agent-ticketing-init`
+- `/agent-ticketing-os:agent-ticketing-new`
+- `/agent-ticketing-os:agent-operating-init`
+
+Do not use `@` to invoke these skills in Claude Code. `@` is for file references.
+
 In clients that load only the root skill, `$agent-ticketing` handles all of those intents. Natural language should also trigger ticketing when the request is clearly about tickets, issues, backlog, bugs, repo tasks, triage, board state, or handoff tracking.
 
 ## Install Modes

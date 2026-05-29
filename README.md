@@ -67,28 +67,34 @@ Agent Ticketing OS gives agents a repeatable operating loop:
 
 ## First Use
 
+In Codex, use the `$` skill names. In Claude Code, plugin skills use slash commands with the plugin namespace.
+
 Install the whole system:
 
 ```text
 $agent-ticketing-os
+/agent-ticketing-os:agent-ticketing-os
 ```
 
 Use only the ticketing layer:
 
 ```text
 $agent-ticketing-init
+/agent-ticketing-os:agent-ticketing-init
 ```
 
 Use only the operating layer:
 
 ```text
 $agent-operating-init
+/agent-ticketing-os:agent-operating-init
 ```
 
 Use the stricter split-board ticket workflow:
 
 ```text
 $agent-ticketing-init using the strict profile
+/agent-ticketing-os:agent-ticketing-init using the strict profile
 ```
 
 ## What It Does
@@ -111,17 +117,19 @@ Close T-0004 with the tests we ran.
 
 ## Skills Included
 
-- `$agent-ticketing-os` - initialize the complete ticketing plus operating system.
-- `$agent-ticketing-init` - set up repo-local ticketing.
-- `$agent-ticketing-new` - create a ticket from natural language.
-- `$agent-ticketing-next` - pick the next best ticket.
-- `$agent-ticketing-board` - show or refresh board and backlog state.
-- `$agent-ticketing-move` - move tickets between statuses.
-- `$agent-ticketing-close` - close or won't-do tickets.
-- `$agent-ticketing-sprint` - plan and close lightweight Markdown sprints.
-- `$agent-ticketing-sync` - sync with external trackers when tools are available.
-- `$agent-operating-init` - set up stricter agent operating mode.
-- `$agent-operating-review` - review readiness for tickets, branches, PRs, and handoffs.
+Codex direct invocation uses `$skill-name`. Claude Code direct invocation uses `/agent-ticketing-os:skill-name`. Claude Code may also invoke the skills automatically from natural language when the request matches a skill description. The `@` symbol in Claude Code is for referencing files, not running plugin skills.
+
+- `$agent-ticketing-os` / `/agent-ticketing-os:agent-ticketing-os` - initialize the complete ticketing plus operating system.
+- `$agent-ticketing-init` / `/agent-ticketing-os:agent-ticketing-init` - set up repo-local ticketing.
+- `$agent-ticketing-new` / `/agent-ticketing-os:agent-ticketing-new` - create a ticket from natural language.
+- `$agent-ticketing-next` / `/agent-ticketing-os:agent-ticketing-next` - pick the next best ticket.
+- `$agent-ticketing-board` / `/agent-ticketing-os:agent-ticketing-board` - show or refresh board and backlog state.
+- `$agent-ticketing-move` / `/agent-ticketing-os:agent-ticketing-move` - move tickets between statuses.
+- `$agent-ticketing-close` / `/agent-ticketing-os:agent-ticketing-close` - close or won't-do tickets.
+- `$agent-ticketing-sprint` / `/agent-ticketing-os:agent-ticketing-sprint` - plan and close lightweight Markdown sprints.
+- `$agent-ticketing-sync` / `/agent-ticketing-os:agent-ticketing-sync` - sync with external trackers when tools are available.
+- `$agent-operating-init` / `/agent-ticketing-os:agent-operating-init` - set up stricter agent operating mode.
+- `$agent-operating-review` / `/agent-ticketing-os:agent-operating-review` - review readiness for tickets, branches, PRs, and handoffs.
 - `$agent-ticketing` - broad fallback skill for clients that load only the root skill.
 
 ## What Gets Created

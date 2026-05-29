@@ -43,10 +43,16 @@ From inside Claude Code:
 
 ## First Use In A Repo
 
-Ask the agent:
+In Codex, ask the agent:
 
 ```text
 $agent-ticketing-os
+```
+
+In Claude Code, use the plugin skill namespace:
+
+```text
+/agent-ticketing-os:agent-ticketing-os
 ```
 
 Then answer the setup questions, or tell the agent to use defaults.
