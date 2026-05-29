@@ -7,10 +7,12 @@ The repository is a Codex marketplace source:
 ```text
 agent-ticketing-os/
   .agents/plugins/marketplace.json
+  .claude-plugin/marketplace.json
   README.md
   plugins/
     agent-ticketing-os/
       .codex-plugin/plugin.json
+      .claude-plugin/plugin.json
       SKILL.md
       agents/openai.yaml
       skills/
@@ -18,6 +20,7 @@ agent-ticketing-os/
 ```
 
 `.agents/plugins/marketplace.json` points Codex at `plugins/agent-ticketing-os`.
+`.claude-plugin/marketplace.json` points Claude Code at the same plugin.
 
 ## Install For Codex
 
@@ -30,14 +33,13 @@ Restart Codex after installing.
 
 ## Install For Claude Code
 
-Claude Code can use the plugin folder as a skill:
+From inside Claude Code:
 
-```bash
-git clone https://github.com/dwightpeaster/agent-ticketing-os.git
-cp -R agent-ticketing-os/plugins/agent-ticketing-os ~/.claude/skills/agent-ticketing-os
+```text
+/plugin marketplace add dwightpeaster/agent-ticketing-os
+/plugin install agent-ticketing-os@agent-ticketing-os
+/reload-plugins
 ```
-
-Restart Claude Code after installing.
 
 ## First Use In A Repo
 

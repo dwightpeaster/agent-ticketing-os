@@ -32,6 +32,26 @@ codex plugin add agent-ticketing-os@agent-ticketing-os
 
 Restart Codex after installing.
 
+## Install With Claude Code
+
+Add this repository as a Claude Code plugin marketplace from inside Claude Code:
+
+```text
+/plugin marketplace add dwightpeaster/agent-ticketing-os
+```
+
+Then install the plugin:
+
+```text
+/plugin install agent-ticketing-os@agent-ticketing-os
+```
+
+Reload plugins after installing:
+
+```text
+/reload-plugins
+```
+
 ## How It Works
 
 ```text
@@ -136,17 +156,6 @@ docs/PRODUCT_DECISIONS.md
 ```
 
 Agent Operating Mode can add repo workflow docs such as `AGENTS.md`, ticket standards, definition of done, branch workflow, commit workflow, review checklist, QA guide, and handoff templates.
-
-## Claude Code
-
-Claude Code can use the same skill package by installing the plugin folder as a skill:
-
-```bash
-git clone https://github.com/dwightpeaster/agent-ticketing-os.git
-cp -R agent-ticketing-os/plugins/agent-ticketing-os ~/.claude/skills/agent-ticketing-os
-```
-
-Restart Claude Code after installing.
 
 ## Design Goals
 
