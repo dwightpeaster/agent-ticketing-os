@@ -9,7 +9,9 @@ Use this broad fallback skill to create and maintain a fast, local-first ticketi
 
 ## Invocation Model
 
-This repository is a package of related skills. In clients that support multi-skill packages, use:
+This repository is a package of related skills. Users should be able to speak naturally most of the time; the smaller skills exist as routing hooks so the host agent can reliably choose the right workflow.
+
+In clients that support multi-skill packages, direct calls are available when useful:
 
 - `$agent-ticketing-os` for the complete ticketing plus operating system setup.
 - `$agent-ticketing-init` for setup.
@@ -33,6 +35,8 @@ In Claude Code, plugin skills are invoked as namespaced slash commands. For exam
 Do not use `@` to invoke these skills in Claude Code. `@` is for file references.
 
 In clients that load only the root skill, `$agent-ticketing` handles all of those intents. Natural language should also trigger ticketing when the request is clearly about tickets, issues, backlog, bugs, repo tasks, triage, board state, or handoff tracking.
+
+Prefer automatic routing over asking the user to invoke low-level skills. For example, if the user says "move T-0004 to review", use the status-change workflow directly; do not ask them to run `$agent-ticketing-move`.
 
 ## Install Modes
 
