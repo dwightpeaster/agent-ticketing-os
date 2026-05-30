@@ -35,6 +35,17 @@ codex plugin add agent-ticketing-os@agent-ticketing-os
 
 Restart Codex after installing.
 
+By default, Codex installs plugins into your Codex home, so the plugin is available across Codex workspaces. To test or use it for only one workspace, install it with a workspace-specific `CODEX_HOME`:
+
+```bash
+mkdir -p .codex-agent-ticketing
+CODEX_HOME="$PWD/.codex-agent-ticketing" codex plugin marketplace add dwightpeaster/agent-ticketing-os
+CODEX_HOME="$PWD/.codex-agent-ticketing" codex plugin add agent-ticketing-os@agent-ticketing-os
+CODEX_HOME="$PWD/.codex-agent-ticketing" codex -C .
+```
+
+That keeps the plugin install isolated to that local Codex home. The generated ticketing files are always written only to the repo where you run the setup skill.
+
 If Codex says the plugin was not found, refresh the marketplace first:
 
 ```bash
@@ -67,6 +78,8 @@ Reload plugins:
 ```
 
 These are Claude Code slash commands. Run them inside Claude Code, not in your shell.
+
+Claude Code supports install scopes. If you want this plugin only for the current repository, open `/plugin`, install from the Discover tab, and choose **Local scope**. Local scope is private to you in this repo. Project scope shares it with collaborators through `.claude/settings.json`; user scope makes it available across your projects.
 
 </details>
 
