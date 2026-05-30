@@ -21,7 +21,15 @@ Use hybrid sync:
 1. Identify provider: GitHub, Jira, Linear, or another MCP-backed tracker.
 2. Check whether the tool/connector is available.
 3. Ask before enabling or writing to an external platform.
-4. Store provider settings and external IDs in `.tickets/config.json` or ticket metadata.
-5. Never overwrite local or external changes silently.
+4. Configure a local provider hook:
+
+```bash
+python3 <package-root>/scripts/ticketctl.py sync-hooks --root . --provider github --mode hybrid --external-project "<owner/repo>"
+```
+
+Use `--provider jira`, `--provider linear`, or `--provider custom` when appropriate.
+
+5. Store provider settings and external IDs in `.tickets/config.json` or ticket metadata.
+6. Never overwrite local or external changes silently.
 
 If the provider is unavailable, keep working locally and create a sync-pending note.

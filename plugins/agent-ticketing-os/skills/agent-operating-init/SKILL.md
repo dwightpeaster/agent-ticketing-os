@@ -30,7 +30,14 @@ Agent Operating Mode lives inside Agent Ticketing OS because it depends on ticke
 2. Ask whether the user wants:
    - fast operating setup
    - deep operating setup
-3. Create or update operating docs without overwriting existing repo-specific rules unless the user explicitly approves replacement.
+3. Create or update operating docs without overwriting existing repo-specific rules unless the user explicitly approves replacement:
+
+```bash
+python3 <package-root>/scripts/ticketctl.py operating-init --root . --mode fast
+```
+
+Use `--mode deep` for the deeper document set. Use `--force` only when the user explicitly approves replacement.
+
 4. Prefer adding missing sections over replacing mature docs.
 5. Report the files created, files skipped, and next recommended setup step.
 

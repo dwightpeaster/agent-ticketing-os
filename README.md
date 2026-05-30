@@ -115,6 +115,8 @@ Move T-0004 to review.
 Close T-0004 with the tests we ran.
 ```
 
+The package now includes deterministic engine commands for strict split-board setup, sprint lifecycle, operating-doc generation, and external tracker sync hooks. Agents should use those commands when available instead of hand-writing those files.
+
 ## Skills Included
 
 Codex direct invocation uses `$skill-name`. Claude Code direct invocation uses `/agent-ticketing-os:skill-name`. Claude Code may also invoke the skills automatically from natural language when the request matches a skill description. The `@` symbol in Claude Code is for referencing files, not running plugin skills.
@@ -146,6 +148,8 @@ Default ticketing setup creates a local ticket system:
   DECISIONS.md
   tickets/
   templates/
+  sprints/
+  sync/
   reports/current-sprint.md
 ```
 
@@ -160,6 +164,8 @@ docs/PRODUCT_DECISIONS.md
 ```
 
 Agent Operating Mode can add repo workflow docs such as `AGENTS.md`, ticket standards, definition of done, branch workflow, commit workflow, review checklist, QA guide, and handoff templates.
+
+External tracker setup creates provider hook files such as `.tickets/sync/github.json` and `.tickets/sync/github-mcp.md` so agents have a clear contract for GitHub, Jira, Linear, or custom MCP-backed sync.
 
 ## Design Goals
 

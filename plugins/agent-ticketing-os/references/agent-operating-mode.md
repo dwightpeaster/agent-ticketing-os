@@ -76,6 +76,12 @@ Fast setup should create a compact operating kit:
 - `docs/AGENT_COMMIT_WORKFLOW.md`
 - `docs/REVIEW_CHECKLIST.md`
 
+Use the deterministic setup command when available:
+
+```bash
+python3 <package-root>/scripts/ticketctl.py operating-init --root . --mode fast
+```
+
 Deep setup may also create:
 
 - `CLAUDE.md`
@@ -88,6 +94,8 @@ Deep setup may also create:
 - `docs/SECURITY_AGENT_PROTOCOL.md`
 - `.github/pull_request_template.md`
 - `.github/ISSUE_TEMPLATE/*.md`
+
+Use `--mode deep` for the fuller document set and `--force` only when the user explicitly approves replacing existing docs.
 
 ## Principles
 

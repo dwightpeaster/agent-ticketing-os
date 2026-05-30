@@ -44,16 +44,16 @@ Goal: one sentence.
 
 ## Sprint Commands
 
-Future CLI commands should support:
+Use the deterministic command surface when available:
 
-- `sprint start`
-- `sprint add <ticket-id>`
-- `sprint remove <ticket-id>`
-- `sprint status`
-- `sprint close`
-- `sprint carryover`
+```bash
+python3 <package-root>/scripts/ticketctl.py sprint start --root . --name "<name>" --goal "<goal>" --tickets T-0001,T-0002
+python3 <package-root>/scripts/ticketctl.py sprint add --root . --tickets T-0003
+python3 <package-root>/scripts/ticketctl.py sprint status --root .
+python3 <package-root>/scripts/ticketctl.py sprint close --root . --summary "<summary>" --carryover T-0004
+```
 
-The skill can provide the workflow before the script implements every command.
+Use Markdown fallback only when the command surface is unavailable.
 
 ## Agent Feature Orchestration
 
@@ -101,6 +101,12 @@ Use a provider adapter pattern:
 
 ```text
 local ticket <-> adapter <-> external platform
+```
+
+Configure the local provider hook before writing to an external tracker:
+
+```bash
+python3 <package-root>/scripts/ticketctl.py sync-hooks --root . --provider github --mode hybrid --external-project "<owner/repo>"
 ```
 
 The adapter should map:

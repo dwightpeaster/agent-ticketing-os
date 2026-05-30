@@ -28,7 +28,14 @@ python3 <package-root>/scripts/ticketctl.py init --root . --profile strict
 
 Use `--interactive` for Deep setup.
 
-3. Run `$agent-operating-init` for the operating layer.
+3. Run the deterministic operating layer setup:
+
+```bash
+python3 <package-root>/scripts/ticketctl.py operating-init --root . --mode fast
+```
+
+Use `--mode deep` for Deep setup.
+
 4. Run:
 
 ```bash

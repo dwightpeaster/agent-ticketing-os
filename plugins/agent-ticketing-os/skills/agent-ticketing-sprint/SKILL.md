@@ -21,7 +21,14 @@ Load `references/sprints-and-sync.md` when designing or changing sprint workflow
 5. Keep sprint status aligned with ticket status.
 6. On close, record completed tickets, carryover tickets, blocked tickets, and retro notes.
 
-Use Markdown first. If future script support exists, prefer `scripts/ticketctl.py sprint ...`.
+Prefer the deterministic sprint commands:
+
+```bash
+python3 <package-root>/scripts/ticketctl.py sprint start --root . --name "<name>" --goal "<goal>" --tickets T-0001,T-0002
+python3 <package-root>/scripts/ticketctl.py sprint add --root . --tickets T-0003
+python3 <package-root>/scripts/ticketctl.py sprint status --root .
+python3 <package-root>/scripts/ticketctl.py sprint close --root . --summary "<summary>" --carryover T-0004
+```
 
 ## Rules
 

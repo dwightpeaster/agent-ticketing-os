@@ -7,7 +7,6 @@ import argparse
 import json
 import os
 import re
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -18,6 +17,28 @@ TYPES = ["feature", "bug", "change", "repo", "research", "design", "security"]
 PRIORITIES = ["P0", "P1", "P2", "P3", "P4"]
 PRIORITY_SCORE = {"P0": 500, "P1": 400, "P2": 300, "P3": 200, "P4": 100}
 STATUS_SCORE = {"ready": 50, "inbox": 10, "backlog": 20, "blocked": -100, "in_progress": -50, "review": -25}
+ACTIVE_STATUSES = {"ready", "in_progress", "review", "blocked"}
+SYNC_PROVIDERS = ["github", "jira", "linear", "custom"]
+SYNC_MODES = ["local-first", "hybrid", "external-first"]
+
+
+DISPLAY_STATUS = {
+    "inbox": "Inbox",
+    "backlog": "Backlog",
+    "ready": "Ready",
+    "in_progress": "In Progress",
+    "review": "Review",
+    "blocked": "Blocked",
+    "done": "Done",
+    "wont_do": "Won't Do",
+}
+
+STRICT_WORKING_SECTIONS = [
+    ("in_progress", "In Progress"),
+    ("review", "Review"),
+    ("blocked", "Blocked"),
+    ("ready", "Ready"),
+]
 
 
 def now() -> str:
@@ -28,6 +49,22 @@ def slugify(value: str) -> str:
     value = value.lower().strip()
     value = re.sub(r"[^a-z0-9]+", "-", value)
     return re.sub(r"-+", "-", value).strip("-") or "ticket"
+
+
+def csv_items(value: str | None) -> list[str]:
+    if not value:
+        return []
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def display_status(status: str) -> str:
+    return DISPLAY_STATUS.get(status, status.replace("_", " ").title())
+
+
+def validate_choice(value: str, choices: list[str], label: str) -> None:
+    if value not in choices:
+        joined = ", ".join(choices)
+        raise SystemExit(f"Invalid {label}: {value}. Expected one of: {joined}")
 
 
 def root_path(args: argparse.Namespace) -> Path:
@@ -55,6 +92,14 @@ def load_json(path: Path, default: Any) -> Any:
 def write_json(path: Path, data: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def write_if_missing(path: Path, content: str, force: bool = False) -> bool:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists() and not force:
+        return False
+    path.write_text(content.rstrip() + "\n", encoding="utf-8")
+    return True
 
 
 def prompt(label: str, default: str) -> str:
@@ -135,9 +180,9 @@ def default_config(root: Path, profile: str = "generic") -> dict[str, Any]:
         config["ticketing"].update(
             {
                 "layout": "split-board",
-                "default_status": "Ready",
-                "statuses": ["Backlog", "Ready", "In Progress", "Blocked", "Review", "Complete"],
-                "types": ["Bug", "Feature", "Security", "Design/UX", "Docs", "Chore", "Test", "Remove"],
+                "default_status": "ready",
+                "statuses": STATUSES,
+                "types": TYPES,
                 "areas": ["backend", "mobile", "dashboard", "public", "notifications", "security", "deployment", "docs", "repo"],
                 "locations": {
                     "working": "tickets.md",
@@ -161,9 +206,10 @@ def default_config(root: Path, profile: str = "generic") -> dict[str, Any]:
                 },
                 "readiness_gate": {
                     "new_idea_min_questions": 10,
-                    "applies_to": ["Feature", "Design/UX"],
+                    "applies_to": ["feature", "design"],
                     "waive_only_when_user_says_scope_complete": True,
                 },
+                "display_statuses": DISPLAY_STATUS,
             }
         )
         config["validation"]["definition_of_done"] = [
@@ -281,6 +327,8 @@ def sync_files(root: Path) -> None:
     write_board(root, config, registry)
     write_changelog(root, registry)
     write_current_sprint(root, registry)
+    if config["ticketing"].get("layout") == "split-board":
+        write_split_board_files(root, config, registry)
 
 
 def ticket_sort_key(ticket: dict[str, Any]) -> tuple[int, str]:
@@ -346,15 +394,123 @@ def write_changelog(root: Path, registry: dict[str, Any]) -> None:
 
 
 def write_current_sprint(root: Path, registry: dict[str, Any]) -> None:
-    tickets = [ticket for ticket in registry.get("tickets", []) if ticket.get("status") in {"ready", "in_progress", "review", "blocked"}]
-    lines = ["# Current Sprint", "", f"Updated: {now()}", ""]
-    for ticket in sorted(tickets, key=ticket_sort_key):
-        lines.append(ticket_line(ticket))
-    if not tickets:
-        lines.append("- No active tickets.")
+    sprint = load_active_sprint(root)
+    if sprint:
+        sprint_ids = set(sprint.get("tickets", []))
+        tickets = [ticket for ticket in registry.get("tickets", []) if ticket.get("id") in sprint_ids]
+        lines = [
+            f"# {sprint['name']}",
+            "",
+            f"Status: {sprint['status']}",
+            f"Goal: {sprint['goal']}",
+            f"Start: {sprint.get('start', '') or 'not set'}",
+            f"End: {sprint.get('end', '') or 'not set'}",
+            f"Updated: {now()}",
+            "",
+            "## Tickets",
+            "",
+        ]
+        for ticket in sorted(tickets, key=ticket_sort_key):
+            lines.append(ticket_line(ticket))
+        if not tickets:
+            lines.append("- No committed tickets.")
+        lines.extend(["", "## Risks", "", sprint.get("risks", "None recorded."), "", "## Validation", "", sprint.get("validation", "Use each ticket's validation plan.")])
+    else:
+        tickets = [ticket for ticket in registry.get("tickets", []) if ticket.get("status") in ACTIVE_STATUSES]
+        lines = ["# Current Sprint", "", f"Updated: {now()}", ""]
+        for ticket in sorted(tickets, key=ticket_sort_key):
+            lines.append(ticket_line(ticket))
+        if not tickets:
+            lines.append("- No active tickets.")
     report = tickets_dir(root) / "reports" / "current-sprint.md"
     report.parent.mkdir(parents=True, exist_ok=True)
     report.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def sprints_dir(root: Path) -> Path:
+    return tickets_dir(root) / "sprints"
+
+
+def active_sprint_path(root: Path) -> Path:
+    return sprints_dir(root) / "current.json"
+
+
+def sprint_archive_path(root: Path, sprint: dict[str, Any]) -> Path:
+    closed = sprint.get("closed", now())[:10]
+    return sprints_dir(root) / f"{closed}-{slugify(sprint['name'])}.json"
+
+
+def sprint_markdown_path(root: Path, sprint: dict[str, Any]) -> Path:
+    return sprints_dir(root) / f"{slugify(sprint['name'])}.md"
+
+
+def load_active_sprint(root: Path) -> dict[str, Any] | None:
+    path = active_sprint_path(root)
+    if not path.exists():
+        return None
+    return load_json(path, {})
+
+
+def save_active_sprint(root: Path, sprint: dict[str, Any]) -> None:
+    sprint["updated"] = now()
+    write_json(active_sprint_path(root), sprint)
+    write_sprint_markdown(root, sprint)
+
+
+def ticket_lookup(registry: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {ticket["id"]: ticket for ticket in registry.get("tickets", [])}
+
+
+def ensure_ticket_ids(registry: dict[str, Any], ticket_ids: list[str]) -> None:
+    by_id = ticket_lookup(registry)
+    missing = [ticket_id for ticket_id in ticket_ids if ticket_id not in by_id]
+    if missing:
+        raise SystemExit(f"Ticket not found: {', '.join(missing)}")
+
+
+def write_sprint_markdown(root: Path, sprint: dict[str, Any]) -> None:
+    lines = [
+        f"# {sprint['name']}",
+        "",
+        f"Status: {sprint['status']}",
+        f"Goal: {sprint['goal']}",
+        f"Start: {sprint.get('start', '') or 'not set'}",
+        f"End: {sprint.get('end', '') or 'not set'}",
+        f"Updated: {sprint.get('updated', now())}",
+        "",
+        "## Tickets",
+        "",
+    ]
+    tickets = sprint.get("tickets", [])
+    lines.extend(f"- {ticket_id}" for ticket_id in tickets)
+    if not tickets:
+        lines.append("- None")
+    lines.extend(
+        [
+            "",
+            "## Risks",
+            "",
+            sprint.get("risks", "None recorded."),
+            "",
+            "## Validation",
+            "",
+            sprint.get("validation", "Use each ticket's validation plan."),
+            "",
+            "## Close Summary",
+            "",
+            sprint.get("summary", "Open."),
+            "",
+            "## Carryover",
+            "",
+        ]
+    )
+    carryover = sprint.get("carryover", [])
+    lines.extend(f"- {ticket_id}" for ticket_id in carryover)
+    if not carryover:
+        lines.append("- None")
+    path = sprint_markdown_path(root, sprint)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def write_templates(root: Path) -> None:
@@ -456,6 +612,57 @@ _None._
             path.write_text(content, encoding="utf-8")
 
 
+def write_split_board_files(root: Path, config: dict[str, Any], registry: dict[str, Any]) -> None:
+    locations = config["ticketing"].get("locations", {})
+    if not locations:
+        return
+    for location in locations.values():
+        (root / location).parent.mkdir(parents=True, exist_ok=True)
+
+    tickets = sorted(registry.get("tickets", []), key=ticket_sort_key)
+    project = config["project"]["name"]
+    updated = now()
+
+    working_lines = [
+        f"# {project} Tickets",
+        "",
+        "This is the strict working board. Deferred tickets live in `docs/tickets/BACKLOG.md`; completed tickets live in `docs/tickets/COMPLETED.md`.",
+        "",
+        f"Updated: {updated}",
+        "",
+        "## Working Tickets",
+        "",
+    ]
+    for status, heading in STRICT_WORKING_SECTIONS:
+        grouped = [ticket for ticket in tickets if ticket.get("status") == status]
+        working_lines.extend([f"### {heading}", ""])
+        working_lines.extend(ticket_line(ticket) for ticket in grouped)
+        if not grouped:
+            working_lines.append("_None._")
+        working_lines.append("")
+    (root / locations["working"]).write_text("\n".join(working_lines), encoding="utf-8")
+
+    backlog = [ticket for ticket in tickets if ticket.get("status") in {"inbox", "backlog"}]
+    backlog_lines = ["# Backlog Tickets", "", f"Updated: {updated}", ""]
+    for status in ["inbox", "backlog"]:
+        grouped = [ticket for ticket in backlog if ticket.get("status") == status]
+        backlog_lines.extend([f"## {display_status(status)}", ""])
+        backlog_lines.extend(ticket_line(ticket) for ticket in grouped)
+        if not grouped:
+            backlog_lines.append("_None._")
+        backlog_lines.append("")
+    (root / locations["backlog"]).write_text("\n".join(backlog_lines), encoding="utf-8")
+
+    complete = [ticket for ticket in tickets if ticket.get("status") in {"done", "wont_do"}]
+    complete_lines = ["# Completed Tickets", "", f"Updated: {updated}", ""]
+    for ticket in sorted(complete, key=lambda t: t.get("updated", ""), reverse=True):
+        complete_lines.append(f"- {ticket.get('updated', '')} [{ticket['id']}] {display_status(ticket['status'])} - {ticket['title']}")
+    if not complete:
+        complete_lines.append("_No completed tickets yet._")
+    complete_lines.append("")
+    (root / locations["completed"]).write_text("\n".join(complete_lines), encoding="utf-8")
+
+
 def seed_ticket(root: Path, config: dict[str, Any], registry: dict[str, Any]) -> None:
     if registry.get("tickets"):
         return
@@ -499,6 +706,8 @@ def cmd_init(args: argparse.Namespace) -> None:
     td.mkdir(parents=True, exist_ok=True)
     (td / "tickets").mkdir(exist_ok=True)
     (td / "reports").mkdir(exist_ok=True)
+    (td / "sprints").mkdir(exist_ok=True)
+    (td / "sync").mkdir(exist_ok=True)
 
     config = default_config(root, args.profile)
     if args.interactive:
@@ -542,13 +751,10 @@ def cmd_new(args: argparse.Namespace) -> None:
     root = root_path(args)
     config = load_config(root)
     registry = load_registry(root)
-    if args.type not in TYPES:
-        raise SystemExit(f"Invalid type: {args.type}")
-    if args.priority not in PRIORITIES:
-        raise SystemExit(f"Invalid priority: {args.priority}")
+    validate_choice(args.type, TYPES, "type")
+    validate_choice(args.priority, PRIORITIES, "priority")
     status = args.status or config["ticketing"]["default_status"]
-    if status not in STATUSES:
-        raise SystemExit(f"Invalid status: {status}")
+    validate_choice(status, STATUSES, "status")
     created = now()
     ticket = {
         "id": next_id(config, registry),
@@ -623,8 +829,7 @@ def cmd_next(args: argparse.Namespace) -> None:
 def cmd_move(args: argparse.Namespace) -> None:
     root = root_path(args)
     ensure_initialized(root)
-    if args.status not in STATUSES:
-        raise SystemExit(f"Invalid status: {args.status}")
+    validate_choice(args.status, STATUSES, "status")
     registry = load_registry(root)
     ticket = find_ticket(registry, args.ticket_id)
     old = ticket["status"]
@@ -671,6 +876,283 @@ def cmd_sync(args: argparse.Namespace) -> None:
     ensure_initialized(root)
     sync_files(root)
     print("Synced ticket files.")
+
+
+def cmd_sprint_start(args: argparse.Namespace) -> None:
+    root = root_path(args)
+    ensure_initialized(root)
+    registry = load_registry(root)
+    if active_sprint_path(root).exists() and not args.force:
+        raise SystemExit("An active sprint already exists. Close it first or use --force.")
+    ticket_ids = csv_items(args.tickets)
+    ensure_ticket_ids(registry, ticket_ids)
+    stamp = now()
+    sprint = {
+        "name": args.name,
+        "goal": args.goal,
+        "status": "active",
+        "start": args.start or stamp[:10],
+        "end": args.end or "",
+        "tickets": ticket_ids,
+        "risks": args.risks or "None recorded.",
+        "validation": args.validation or "Use each ticket's validation plan.",
+        "created": stamp,
+        "updated": stamp,
+    }
+    save_active_sprint(root, sprint)
+    sync_files(root)
+    print(f"Started sprint: {sprint['name']}")
+
+
+def cmd_sprint_add(args: argparse.Namespace) -> None:
+    root = root_path(args)
+    ensure_initialized(root)
+    sprint = load_active_sprint(root)
+    if not sprint:
+        raise SystemExit("No active sprint found. Run: ticketctl.py sprint start ...")
+    registry = load_registry(root)
+    ticket_ids = csv_items(args.tickets)
+    ensure_ticket_ids(registry, ticket_ids)
+    current = list(dict.fromkeys([*sprint.get("tickets", []), *ticket_ids]))
+    sprint["tickets"] = current
+    save_active_sprint(root, sprint)
+    sync_files(root)
+    print(f"Added {len(ticket_ids)} ticket(s) to sprint: {sprint['name']}")
+
+
+def cmd_sprint_status(args: argparse.Namespace) -> None:
+    root = root_path(args)
+    ensure_initialized(root)
+    sync_files(root)
+    sprint = load_active_sprint(root)
+    if not sprint:
+        print("No active sprint.")
+        return
+    print(f"{sprint['name']}\t{sprint['status']}\t{sprint['goal']}\t{','.join(sprint.get('tickets', []))}")
+
+
+def cmd_sprint_close(args: argparse.Namespace) -> None:
+    root = root_path(args)
+    ensure_initialized(root)
+    sprint = load_active_sprint(root)
+    if not sprint:
+        raise SystemExit("No active sprint found.")
+    sprint["status"] = "closed"
+    sprint["closed"] = now()
+    sprint["summary"] = args.summary
+    sprint["carryover"] = csv_items(args.carryover)
+    write_sprint_markdown(root, sprint)
+    archive = sprint_archive_path(root, sprint)
+    write_json(archive, sprint)
+    active_sprint_path(root).unlink()
+    sync_files(root)
+    print(f"Closed sprint: {sprint['name']}")
+
+
+def operating_docs(project: str, mode: str) -> dict[str, str]:
+    docs = {
+        "AGENTS.md": f"""# Agent Instructions
+
+This repo uses Agent Ticketing OS. Before meaningful implementation work, create or select one active ticket and keep the ticket trail current.
+
+## Core Loop
+
+1. Read `.tickets/BOARD.md`, `.tickets/BACKLOG.md`, and the active ticket.
+2. Move the ticket to `in_progress` when implementation begins.
+3. Keep changes inside the ticket scope.
+4. Record changed files, decisions, validation, and handoff notes on the ticket.
+5. Move the ticket to `review` or close it with a resolution and validation evidence.
+
+## Guardrails
+
+- Do not store secrets, credentials, private customer data, or access tokens in ticket files.
+- Create follow-up tickets for discovered work instead of expanding scope silently.
+- Update durable docs when commands, architecture, setup, workflow, or product decisions change.
+""",
+        "docs/TICKET_STANDARDS.md": f"""# Ticket Standards
+
+Every meaningful repo change in {project} should map to one ticket.
+
+## Required Fields
+
+- Context
+- Acceptance criteria
+- Priority
+- Area
+- Validation plan
+- Agent handoff notes
+
+## Ready Rules
+
+A ticket is ready only when another agent can start without guessing the outcome.
+""",
+        "docs/DEFINITION_OF_DONE.md": """# Definition Of Done
+
+- Acceptance criteria are satisfied or gaps are documented.
+- Validation ran, or skipped validation has a clear reason.
+- Ticket activity records changed files and important decisions.
+- Follow-up tickets exist for deferred work.
+- `git diff --check` passes before handoff.
+""",
+        "docs/BRANCH_WORKFLOW.md": """# Branch Workflow
+
+- Use a focused branch for implementation work when the host repo uses branches.
+- Keep branch scope aligned to one ticket or one tightly related ticket group.
+- Do not mix unrelated cleanup with feature or bug work.
+- Mention ticket ids in branch names when practical.
+""",
+        "docs/AGENT_COMMIT_WORKFLOW.md": """# Agent Commit Workflow
+
+- Commit only cohesive changes.
+- Mention ticket ids in commit messages when practical.
+- Do not commit generated dependency folders or local secrets.
+- Run configured validation before asking for merge or handoff.
+""",
+        "docs/REVIEW_CHECKLIST.md": """# Review Checklist
+
+- Active ticket exists and matches the change.
+- Acceptance criteria are covered.
+- Tests or validation evidence are recorded.
+- No unrelated files or sensitive data are included.
+- Handoff notes explain what changed and what remains.
+""",
+    }
+    if mode == "deep":
+        docs.update(
+            {
+                "CLAUDE.md": """# Claude Code Project Memory
+
+Use Agent Ticketing OS for repo work. Prefer one ticket per coherent outcome, update the ticket trail as work moves, and keep handoff notes short and operational.
+""",
+                "docs/AGENT_QA_GUIDE.md": """# Agent QA Guide
+
+Record the commands, screenshots, manual checks, migrations, or environment checks used to validate a ticket. If validation is not possible, explain the blocker and create a follow-up ticket when needed.
+""",
+                "docs/AGENT_HANDOFF_TEMPLATE.md": """# Agent Handoff Template
+
+## Current State
+
+## Files Inspected
+
+## Commands Run
+
+## What Changed
+
+## Next Step
+""",
+                "docs/RELEASE_RUNBOOK.md": """# Release Runbook
+
+1. Review tickets completed since the last release.
+2. Confirm validation evidence is recorded.
+3. Update release notes or changelog.
+4. Confirm rollback or mitigation notes for risky changes.
+""",
+                "docs/SECURITY_AGENT_PROTOCOL.md": """# Security Agent Protocol
+
+- Treat auth, permissions, secrets, injection, dependency, and data exposure work as security-sensitive.
+- Do not paste secrets into tickets or docs.
+- Create security tickets for discovered risks and mark validation evidence clearly.
+""",
+                ".github/pull_request_template.md": """## Ticket
+
+## Summary
+
+## Validation
+
+## Risk And Rollback
+
+## Follow-ups
+""",
+            }
+        )
+    return docs
+
+
+def cmd_operating_init(args: argparse.Namespace) -> None:
+    root = root_path(args)
+    ensure_initialized(root)
+    config = load_config(root)
+    created: list[str] = []
+    skipped: list[str] = []
+    docs = operating_docs(config["project"]["name"], args.mode)
+    for relative, content in docs.items():
+        if write_if_missing(root / relative, content, force=args.force):
+            created.append(relative)
+        else:
+            skipped.append(relative)
+    marker = {
+        "mode": args.mode,
+        "created": created,
+        "skipped_existing": skipped,
+        "updated": now(),
+    }
+    write_json(tickets_dir(root) / "operating.json", marker)
+    print(f"Operating docs created: {len(created)}; skipped existing: {len(skipped)}")
+
+
+def sync_hook_doc(provider: str, mode: str, external_project: str) -> str:
+    external_label = external_project or "not configured"
+    command_name = {
+        "github": "GitHub Issues",
+        "jira": "Jira",
+        "linear": "Linear",
+        "custom": "custom tracker",
+    }[provider]
+    return f"""# {command_name} Sync Hook
+
+Provider: `{provider}`
+Mode: `{mode}`
+External project: `{external_label}`
+
+## Contract
+
+- Local tickets keep implementation notes, validation, decisions, and agent handoffs.
+- The external tracker keeps collaboration status, assignment, stakeholder comments, and cross-team visibility.
+- Every synced local ticket stores external ids in ticket metadata or `.tickets/sync/{provider}.json`.
+- Sync must never overwrite local or external changes silently.
+
+## MCP Expectations
+
+When an MCP connector is available, the agent should:
+
+1. Read local `.tickets/REGISTRY.json`.
+2. Read external issues from {command_name}.
+3. Match by stored external id first, then by ticket id in title/body.
+4. Propose conflict resolution before writing either side.
+5. Record sync decisions in `.tickets/DECISIONS.md` or the affected ticket activity log.
+
+## Write Policy
+
+- `local-first`: local tickets are source of truth; external issues mirror state.
+- `hybrid`: local implementation detail and external collaboration state are both authoritative in their lanes.
+- `external-first`: external tracker controls planning state; local tickets keep execution detail.
+"""
+
+
+def cmd_sync_hooks(args: argparse.Namespace) -> None:
+    root = root_path(args)
+    config = load_config(root)
+    validate_choice(args.provider, SYNC_PROVIDERS, "provider")
+    validate_choice(args.mode, SYNC_MODES, "mode")
+    sync_root = tickets_dir(root) / "sync"
+    provider_config = {
+        "provider": args.provider,
+        "mode": args.mode,
+        "external_project": args.external_project or "",
+        "enabled": True,
+        "mcp_server": args.mcp_server or args.provider,
+        "id_field": f"{args.provider}_id",
+        "updated": now(),
+    }
+    write_json(sync_root / f"{args.provider}.json", provider_config)
+    write_if_missing(
+        sync_root / "README.md",
+        "# External Tracker Sync\n\nProvider hook files describe how agents should sync local tickets with external issue trackers when MCP tools are available.\n",
+    )
+    write_if_missing(sync_root / f"{args.provider}-mcp.md", sync_hook_doc(args.provider, args.mode, args.external_project or ""), force=True)
+    config.setdefault("sync", {})[args.provider] = provider_config
+    write_json(config_path(root), config)
+    print(f"Configured {args.provider} sync hook in {sync_root}")
 
 
 def cmd_doctor(args: argparse.Namespace) -> None:
@@ -772,6 +1254,50 @@ def build_parser() -> argparse.ArgumentParser:
     sync = sub.add_parser("sync", help="Regenerate board and ticket Markdown.")
     sync.add_argument("--root", default=argparse.SUPPRESS, help="Target repository root.")
     sync.set_defaults(func=cmd_sync)
+
+    sprint = sub.add_parser("sprint", help="Manage Markdown sprints.")
+    sprint_sub = sprint.add_subparsers(dest="sprint_command", required=True)
+
+    sprint_start = sprint_sub.add_parser("start", help="Start an active sprint.")
+    sprint_start.add_argument("--root", default=argparse.SUPPRESS, help="Target repository root.")
+    sprint_start.add_argument("--name", required=True)
+    sprint_start.add_argument("--goal", required=True)
+    sprint_start.add_argument("--tickets", default="", help="Comma-separated ticket ids.")
+    sprint_start.add_argument("--start")
+    sprint_start.add_argument("--end")
+    sprint_start.add_argument("--risks")
+    sprint_start.add_argument("--validation")
+    sprint_start.add_argument("--force", action="store_true")
+    sprint_start.set_defaults(func=cmd_sprint_start)
+
+    sprint_add = sprint_sub.add_parser("add", help="Add tickets to the active sprint.")
+    sprint_add.add_argument("--root", default=argparse.SUPPRESS, help="Target repository root.")
+    sprint_add.add_argument("--tickets", required=True, help="Comma-separated ticket ids.")
+    sprint_add.set_defaults(func=cmd_sprint_add)
+
+    sprint_status = sprint_sub.add_parser("status", help="Show active sprint status.")
+    sprint_status.add_argument("--root", default=argparse.SUPPRESS, help="Target repository root.")
+    sprint_status.set_defaults(func=cmd_sprint_status)
+
+    sprint_close = sprint_sub.add_parser("close", help="Close the active sprint.")
+    sprint_close.add_argument("--root", default=argparse.SUPPRESS, help="Target repository root.")
+    sprint_close.add_argument("--summary", required=True)
+    sprint_close.add_argument("--carryover", default="", help="Comma-separated carryover ticket ids.")
+    sprint_close.set_defaults(func=cmd_sprint_close)
+
+    operating = sub.add_parser("operating-init", help="Create deterministic agent operating docs.")
+    operating.add_argument("--root", default=argparse.SUPPRESS, help="Target repository root.")
+    operating.add_argument("--mode", default="fast", choices=["fast", "deep"])
+    operating.add_argument("--force", action="store_true")
+    operating.set_defaults(func=cmd_operating_init)
+
+    sync_hooks = sub.add_parser("sync-hooks", help="Configure external tracker sync hook files.")
+    sync_hooks.add_argument("--root", default=argparse.SUPPRESS, help="Target repository root.")
+    sync_hooks.add_argument("--provider", required=True, choices=SYNC_PROVIDERS)
+    sync_hooks.add_argument("--mode", default="hybrid", choices=SYNC_MODES)
+    sync_hooks.add_argument("--external-project", default="")
+    sync_hooks.add_argument("--mcp-server", default="")
+    sync_hooks.set_defaults(func=cmd_sync_hooks)
 
     doctor = sub.add_parser("doctor", help="Validate ticket state.")
     doctor.add_argument("--root", default=argparse.SUPPRESS, help="Target repository root.")
