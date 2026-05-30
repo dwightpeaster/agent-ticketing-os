@@ -63,7 +63,10 @@ class TicketCtlTest(unittest.TestCase):
             self.assertIn("[T-0002]", (repo / "docs/tickets/COMPLETED.md").read_text(encoding="utf-8"))
             self.assertTrue((repo / "docs/tickets/BACKLOG.md").exists())
             self.assertTrue((repo / "docs/tickets/COMPLETED.md").exists())
-            self.assertIn("## Release Milestones", (repo / "docs/ROADMAP.md").read_text(encoding="utf-8"))
+            roadmap = (repo / "docs/ROADMAP.md").read_text(encoding="utf-8")
+            self.assertIn("## Release Milestones", roadmap)
+            self.assertIn("## Risk Register", roadmap)
+            self.assertIn("## Dependency Map", roadmap)
             self.assertIn("## Decision Template", (repo / "docs/PRODUCT_DECISIONS.md").read_text(encoding="utf-8"))
 
     def test_sprint_lifecycle(self) -> None:

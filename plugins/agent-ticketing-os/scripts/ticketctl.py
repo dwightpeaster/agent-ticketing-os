@@ -941,23 +941,50 @@ One-line archive records for completed or intentionally closed tickets.
 """,
         "roadmap": """# Roadmap
 
-Use this document to group ticket work into phases, releases, and product milestones. The roadmap should explain direction without replacing tickets.
+Use this document to connect tickets to product phases, release milestones, risks, and decision points. The roadmap explains direction; tickets remain the implementation source of truth.
 
 ## Roadmap Rules
 
-- Roadmap items should link to ticket ids or ticket ranges.
-- Keep implementation detail in tickets.
-- Update this document when release goals, milestone order, or major scope changes.
-- Do not treat the roadmap as a promise unless the user marks it committed.
+- Link roadmap items to ticket ids, ticket ranges, or sprint names.
+- Keep implementation detail inside tickets.
+- Update this document when release goals, milestone order, scope, or risk changes.
+- Mark commitment level clearly: proposed, planned, committed, shipped, deferred.
+- Do not treat a roadmap item as committed unless the user explicitly marks it committed.
+- When a roadmap decision changes product behavior or architecture, record it in `docs/PRODUCT_DECISIONS.md`.
+
+## Roadmap Health
+
+- Last reviewed:
+- Reviewed by:
+- Current focus:
+- Next release target:
+- Biggest risk:
+- Blocked by:
+
+## Ticket Range Guide
+
+Use ranges to keep the roadmap scannable. Adjust these to fit the project.
+
+| Range | Theme | Notes |
+| --- | --- | --- |
+| T-0000 | repo and agent workflow foundation | setup, docs, CI, standards |
+| T-0100 | core product/domain | primary user workflows |
+| T-0200 | integrations and data | APIs, imports, exports, sync |
+| T-0300 | UX and design system | screens, components, content, accessibility |
+| T-0400 | reliability and security | auth, permissions, logging, hardening |
+| T-0500 | release readiness | deployment, QA, monitoring, documentation |
 
 ## Now
 
-Current committed work.
+Committed or actively prepared work.
 
 - Goal:
 - Ticket range:
+- Included tickets:
 - Success criteria:
+- Validation expectations:
 - Risks:
+- Decision links:
 
 ## Next
 
@@ -965,8 +992,10 @@ Likely upcoming work after the current focus.
 
 - Goal:
 - Ticket range:
-- Success criteria:
+- Candidate tickets:
 - Dependencies:
+- Readiness gaps:
+- Decision needed:
 
 ## Later
 
@@ -975,12 +1004,39 @@ Known work that is not yet scheduled.
 - Goal:
 - Ticket range:
 - Open questions:
+- Trigger for revisiting:
+
+## Not Planned
+
+Ideas or requests that are intentionally out of scope for now.
+
+- Item:
+  - Reason:
+  - Revisit condition:
 
 ## Release Milestones
 
-| Milestone | Goal | Ticket Range | Status | Notes |
+| Milestone | Goal | Ticket Range | Commitment | Status | Target | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| M1 | Define the first milestone | T-0001+ | proposed | planning | TBD | Update during setup |
+
+## Sprint Alignment
+
+| Sprint | Goal | Committed Tickets | Outcome | Carryover |
 | --- | --- | --- | --- | --- |
-| M1 | Define the first milestone | T-0001+ | planning | Update during setup |
+| Current | TBD | TBD | TBD | TBD |
+
+## Risk Register
+
+| Risk | Impact | Likelihood | Owner | Mitigation | Related Tickets |
+| --- | --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD | TBD |
+
+## Dependency Map
+
+| Dependency | Needed For | Owner | Status | Backup Plan |
+| --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD |
 
 ## Open Roadmap Questions
 
@@ -988,6 +1044,12 @@ Known work that is not yet scheduled.
 - Which tickets are user-facing vs repo/internal?
 - Which risks need discovery before commitment?
 - Which external dependencies can block delivery?
+- Which items are explicitly not planned?
+- Which decisions need to move into `docs/PRODUCT_DECISIONS.md`?
+
+## Changelog
+
+- YYYY-MM-DD: Created roadmap.
 """,
         "decisions": """# Product Decisions
 
