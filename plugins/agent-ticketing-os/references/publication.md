@@ -26,6 +26,7 @@ agent-ticketing-os/
 
 ```bash
 codex plugin marketplace add dwightpeaster/agent-ticketing-os
+codex plugin list
 codex plugin add agent-ticketing-os@agent-ticketing-os
 ```
 
@@ -40,6 +41,8 @@ From inside Claude Code:
 /plugin install agent-ticketing-os@agent-ticketing-os
 /reload-plugins
 ```
+
+These are Claude Code slash commands. Do not run them in a normal shell.
 
 ## First Use In A Repo
 

@@ -9,7 +9,10 @@
       "name": "agent-ticketing-os",
       "source": "./plugins/agent-ticketing-os",
       "description": "Ticket-first workflows, sprints, sync, and optional operating guardrails for coding agents.",
-      "version": "0.1.0",
+      "version": "0.2.0",
+      "displayName": "Agent Ticketing OS",
+      "repository": "https://github.com/dwightpeaster/agent-ticketing-os",
+      "license": "MIT",
       "author": {
         "name": "Dwight Peaster"
       },

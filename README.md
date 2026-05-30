@@ -35,6 +35,14 @@ codex plugin add agent-ticketing-os@agent-ticketing-os
 
 Restart Codex after installing.
 
+If Codex says the plugin was not found, refresh the marketplace first:
+
+```bash
+codex plugin marketplace add dwightpeaster/agent-ticketing-os
+codex plugin list
+codex plugin add agent-ticketing-os@agent-ticketing-os
+```
+
 </details>
 
 <details>
@@ -57,6 +65,8 @@ Reload plugins:
 ```text
 /reload-plugins
 ```
+
+These are Claude Code slash commands. Run them inside Claude Code, not in your shell.
 
 </details>
 
