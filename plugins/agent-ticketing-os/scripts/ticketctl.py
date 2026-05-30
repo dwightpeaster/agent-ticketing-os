@@ -601,10 +601,134 @@ _None._
         )
 
     defaults = {
-        "backlog": "# Backlog Tickets\n\nDeferred `Backlog` tickets that are not ready for implementation.\n",
-        "completed": "# Completed Tickets\n\nOne-line archive records for `Complete` tickets.\n",
-        "roadmap": "# Roadmap\n\nDelivery phases, release milestones, and phase-level ticket ranges.\n",
-        "decisions": "# Product Decisions\n\nDurable product decisions and open product or architecture decisions.\n",
+        "backlog": """# Backlog Tickets
+
+Deferred tickets that are not ready for implementation.
+
+## Backlog Rules
+
+- Keep discovery, vague ideas, deferred improvements, and unscheduled work here.
+- Do not move a ticket to `ready` until the outcome, acceptance criteria, owner area, and validation plan are clear.
+- Create follow-up tickets for work discovered during implementation instead of expanding active ticket scope silently.
+- Review backlog regularly during sprint planning or roadmap planning.
+
+## Triage Questions
+
+- What user, system, or repo problem does this solve?
+- What happens if this is not done?
+- What is the smallest useful outcome?
+- What is out of scope?
+- What validation would prove it is done?
+- Does this block or depend on another ticket?
+""",
+        "completed": """# Completed Tickets
+
+One-line archive records for completed or intentionally closed tickets.
+
+## Archive Rules
+
+- Keep completed ticket bodies out of the live working board.
+- Preserve detailed implementation history in git and the ticket file.
+- Record ticket id, completion date, status, and short outcome.
+- Create follow-up tickets for deferred work before archiving.
+
+## Records
+""",
+        "roadmap": """# Roadmap
+
+Use this document to group ticket work into phases, releases, and product milestones. The roadmap should explain direction without replacing tickets.
+
+## Roadmap Rules
+
+- Roadmap items should link to ticket ids or ticket ranges.
+- Keep implementation detail in tickets.
+- Update this document when release goals, milestone order, or major scope changes.
+- Do not treat the roadmap as a promise unless the user marks it committed.
+
+## Now
+
+Current committed work.
+
+- Goal:
+- Ticket range:
+- Success criteria:
+- Risks:
+
+## Next
+
+Likely upcoming work after the current focus.
+
+- Goal:
+- Ticket range:
+- Success criteria:
+- Dependencies:
+
+## Later
+
+Known work that is not yet scheduled.
+
+- Goal:
+- Ticket range:
+- Open questions:
+
+## Release Milestones
+
+| Milestone | Goal | Ticket Range | Status | Notes |
+| --- | --- | --- | --- | --- |
+| M1 | Define the first milestone | T-0001+ | planning | Update during setup |
+
+## Open Roadmap Questions
+
+- Which work is required before the next release?
+- Which tickets are user-facing vs repo/internal?
+- Which risks need discovery before commitment?
+- Which external dependencies can block delivery?
+""",
+        "decisions": """# Product Decisions
+
+Use this document for durable product, architecture, workflow, and roadmap decisions. Tickets should link here when a decision affects future work.
+
+## Decision Rules
+
+- Record decisions that future agents should not rediscover.
+- Include context, options, decision, consequences, and follow-up tickets.
+- Keep secrets and private customer data out of decision records.
+- Mark open questions separately from accepted decisions.
+
+## Decision Template
+
+```md
+### DEC-0001: Title
+
+Status: proposed | accepted | superseded
+Date: YYYY-MM-DD
+Related tickets: T-0000
+
+Context:
+
+Options:
+
+Decision:
+
+Consequences:
+
+Follow-ups:
+```
+
+## Accepted Decisions
+
+- None yet.
+
+## Proposed Decisions
+
+- None yet.
+
+## Open Questions
+
+- What decisions must be made before tickets can move from backlog to ready?
+- Which product behaviors are intentionally out of scope?
+- Which architecture choices should agents preserve?
+""",
     }
     for key, content in defaults.items():
         path = root / locations[key]
@@ -953,68 +1077,459 @@ def operating_docs(project: str, mode: str) -> dict[str, str]:
     docs = {
         "AGENTS.md": f"""# Agent Instructions
 
-This repo uses Agent Ticketing OS. Before meaningful implementation work, create or select one active ticket and keep the ticket trail current.
+This repo uses Agent Ticketing OS. Treat the ticket trail as the source of truth for agent work: pick one active ticket, keep the status current, record validation, and leave the next agent enough context to continue without re-discovery.
 
-## Core Loop
+## Non-Negotiable Rules
+
+- Do not start meaningful implementation without a ticket unless the user explicitly says the work is too small for one.
+- Do not work on multiple unrelated outcomes under one ticket.
+- Do not silently expand scope. Create linked follow-up tickets for discovered work.
+- Do not store secrets, credentials, private customer data, tokens, or private URLs in tickets or docs.
+- Do not mark work done without validation evidence or a clear reason validation could not run.
+- Do not overwrite existing project instructions unless the user explicitly asks for replacement.
+
+## Standard Agent Loop
 
 1. Read `.tickets/BOARD.md`, `.tickets/BACKLOG.md`, and the active ticket.
-2. Move the ticket to `in_progress` when implementation begins.
-3. Keep changes inside the ticket scope.
-4. Record changed files, decisions, validation, and handoff notes on the ticket.
-5. Move the ticket to `review` or close it with a resolution and validation evidence.
+2. If no active ticket exists, create or select one before implementation.
+3. Confirm the ticket has context, acceptance criteria, scope, and validation.
+4. Move the ticket to `in_progress` when work begins.
+5. Make the smallest coherent change that satisfies the ticket.
+6. Update the ticket with changed files, decisions, commands run, and validation results.
+7. Move the ticket to `review`, `done`, or `blocked` based on the current state.
+8. Run ticket sync or board refresh before handoff.
 
-## Guardrails
+## Before Editing Files
 
-- Do not store secrets, credentials, private customer data, or access tokens in ticket files.
-- Create follow-up tickets for discovered work instead of expanding scope silently.
-- Update durable docs when commands, architecture, setup, workflow, or product decisions change.
+- Identify the active ticket id.
+- Read any repo-specific docs under `docs/`.
+- Check the current branch and avoid protected branches for implementation work.
+- Inspect nearby code and existing conventions before adding new patterns.
+- Decide which validation command should prove the change.
+
+## During Implementation
+
+- Keep commits and file edits aligned to the active ticket.
+- Prefer existing project patterns over new abstractions.
+- Update tests, docs, routes, env examples, and setup instructions when behavior changes.
+- If the work reveals a separate bug or feature, create a follow-up ticket and continue the current ticket only if safe.
+
+## Handoff Requirements
+
+Every handoff must include:
+
+- Ticket id and status.
+- Summary of what changed.
+- Files touched or inspected.
+- Commands run and results.
+- Known risks, blockers, or skipped validation.
+- Next recommended action.
 """,
         "docs/TICKET_STANDARDS.md": f"""# Ticket Standards
 
-Every meaningful repo change in {project} should map to one ticket.
+Every meaningful repo change in {project} should map to one focused ticket. A ticket is not just a task title; it is the working contract between the user, the agent, and the next person who touches the repo.
 
-## Required Fields
+## Ticket Purpose
+
+Tickets exist to:
+
+- Define the outcome before implementation starts.
+- Keep scope visible.
+- Preserve the reasoning and validation trail.
+- Make work resumable by another agent.
+- Create a durable history in git.
+
+## Required Ticket Fields
 
 - Context
-- Acceptance criteria
+- Type
+- Status
 - Priority
 - Area
+- Acceptance criteria
 - Validation plan
-- Agent handoff notes
+- Implementation notes
+- Activity log
+- Agent handoff
 
-## Ready Rules
+## Ticket Types
 
-A ticket is ready only when another agent can start without guessing the outcome.
+- `feature`: new user-facing behavior.
+- `bug`: broken behavior, regression, data loss, error, or UI defect.
+- `change`: intentional adjustment to existing behavior.
+- `repo`: build, CI, docs, dependencies, architecture, or maintenance.
+- `research`: investigation where the output may be a decision or follow-up ticket.
+- `design`: UX, UI, visual system, interaction, or content structure.
+- `security`: auth, permissions, secrets, injection, dependency, or data exposure risk.
+
+## Status Rules
+
+- `inbox`: captured but not clarified.
+- `backlog`: valid but not ready to start.
+- `ready`: clear enough for an agent to begin.
+- `in_progress`: actively being worked.
+- `review`: implementation is ready for review or final verification.
+- `blocked`: waiting on an external decision, access, dependency, or failing prerequisite.
+- `done`: completed and validated.
+- `wont_do`: intentionally closed without implementation.
+
+## Priority Rules
+
+- `P0`: outage, data loss, security exposure, or unusable core workflow.
+- `P1`: urgent user-impacting issue or high-value work needed soon.
+- `P2`: normal planned work.
+- `P3`: useful cleanup or polish.
+- `P4`: idea parking lot.
+
+## Ready Criteria
+
+A ticket may move to `ready` only when it has:
+
+- A clear problem or opportunity.
+- Observable acceptance criteria.
+- A likely area or module.
+- Known dependencies or an explicit "none".
+- A validation plan.
+- Risk notes for migrations, data, auth, payments, releases, or user-visible behavior.
+
+## Bug Intake Checklist
+
+Bug tickets should capture:
+
+- Expected behavior.
+- Actual behavior.
+- Reproduction steps.
+- Affected environment.
+- Severity and user impact.
+- Suspected area.
+- Whether this is a regression.
+- Validation needed to prove the fix.
+
+## Feature Intake Checklist
+
+Feature tickets should capture:
+
+- User or actor.
+- Workflow being improved.
+- Success criteria.
+- Out-of-scope items.
+- UX/content implications.
+- Data/API implications.
+- Analytics, logging, or notification needs.
+- Validation and review expectations.
+
+## Splitting Rules
+
+Split a ticket when:
+
+- It touches unrelated areas.
+- It needs separate review or validation paths.
+- It mixes refactor work with behavior changes.
+- It contains work that can ship independently.
+- It becomes too large for a clear handoff.
+
+Do not split merely because several files are involved. One coherent outcome can touch multiple files.
+
+## Activity Log Rules
+
+Keep activity entries factual and compact:
+
+- Files changed.
+- Commands run.
+- Decisions made.
+- Blockers found.
+- Follow-up tickets created.
+
+Do not paste long command output. Summarize the result and keep only the important failure text.
+
+## Closure Rules
+
+Closing a ticket requires:
+
+- Resolution summary.
+- Validation evidence or skipped-validation reason.
+- Follow-up tickets for deferred work.
+- Updated docs when setup, routes, env vars, commands, or workflows changed.
 """,
         "docs/DEFINITION_OF_DONE.md": """# Definition Of Done
 
-- Acceptance criteria are satisfied or gaps are documented.
-- Validation ran, or skipped validation has a clear reason.
-- Ticket activity records changed files and important decisions.
+Use this checklist before moving a ticket to `done`.
+
+## Universal Done Criteria
+
+- The change maps to one active ticket.
+- Acceptance criteria are satisfied, or gaps are clearly documented.
+- No unrelated behavior is included.
+- The ticket activity log includes changed files, decisions, and validation.
 - Follow-up tickets exist for deferred work.
-- `git diff --check` passes before handoff.
+- `git diff --check` passes.
+- The handoff notes explain what changed and what to watch next.
+
+## Validation Criteria
+
+At least one of these must be true:
+
+- Automated tests passed.
+- Lint/typecheck/build passed.
+- Manual verification steps are recorded.
+- Screenshots or visual checks are recorded when UI changed.
+- Validation was not possible and the reason is documented.
+
+Skipped validation must include:
+
+- Why it was skipped.
+- What risk remains.
+- What command or manual check should run later.
+
+## Code Quality Criteria
+
+- Code follows local patterns.
+- New abstractions are justified by real duplication or complexity.
+- Error handling covers expected failure modes.
+- User-facing copy is clear and actionable.
+- Logging does not expose secrets or private data.
+- Dead code introduced by the change is removed.
+
+## Documentation Criteria
+
+Update docs when the change affects:
+
+- Setup commands.
+- Environment variables.
+- Public APIs.
+- Routes or navigation.
+- Database schema or migrations.
+- Release process.
+- Security expectations.
+- Agent workflow.
+
+## Ticket-Specific Done Criteria
+
+### Bug
+
+- Reproduction is understood or documented as unknown.
+- Fix addresses the cause, not only the symptom.
+- Regression validation is recorded.
+- User impact is summarized.
+
+### Feature
+
+- Acceptance criteria are demonstrably met.
+- Edge cases are handled or ticketed.
+- UX/content implications are reviewed.
+- Any follow-up improvements are ticketed.
+
+### Repo/Chore
+
+- Tooling or workflow impact is documented.
+- Rollback path is clear for risky changes.
+- CI or local validation proves the repo still works.
+
+### Security
+
+- Sensitive details are not exposed in tickets or logs.
+- Risk and mitigation are documented.
+- Validation covers the security boundary involved.
+
+## Done Is Not
+
+- "Code compiles on my machine" without recording the command.
+- "Looks good" without acceptance criteria.
+- Closing a ticket while known related work is hidden in the implementation.
+- Leaving the next agent to rediscover what happened.
 """,
         "docs/BRANCH_WORKFLOW.md": """# Branch Workflow
 
-- Use a focused branch for implementation work when the host repo uses branches.
-- Keep branch scope aligned to one ticket or one tightly related ticket group.
+Use branches to keep implementation work reviewable, reversible, and tied to tickets.
+
+## Branch Policy
+
+- Work from the repo's default integration branch unless the project says otherwise.
+- Avoid implementing directly on protected branches.
+- Keep one branch aligned to one ticket or one tightly related ticket group.
 - Do not mix unrelated cleanup with feature or bug work.
 - Mention ticket ids in branch names when practical.
+
+## Naming Convention
+
+Preferred branch names:
+
+```text
+feature/T-0004-login-redirect
+bugfix/T-0012-settings-crash
+repo/T-0020-ci-cache
+security/T-0031-token-scope
+```
+
+If the host repo has an existing convention, follow it and keep the ticket id visible.
+
+## Before Creating A Branch
+
+- Confirm the active ticket id.
+- Check current branch and uncommitted changes.
+- Pull or fetch when the user asks or repo workflow requires it.
+- Make sure the ticket is `ready` or document why work is starting early.
+
+## During Branch Work
+
+- Keep branch changes inside ticket scope.
+- Do not include generated dependency folders, local env files, secrets, or unrelated formatting churn.
+- Update ticket activity when important files or decisions change.
+- Create follow-up tickets for discovered work.
+
+## Blocked Branches
+
+If work becomes blocked:
+
+- Move the ticket to `blocked`.
+- Record the blocker and exact missing input.
+- Leave the branch in a resumable state.
+- Do not keep guessing across security, data, billing, auth, or migration uncertainty.
+
+## Ready For Review
+
+Before asking for review:
+
+- Move the ticket to `review`.
+- Record validation.
+- Summarize changed files.
+- Confirm known risks and follow-ups.
+- Ensure docs are updated when behavior or workflow changed.
 """,
         "docs/AGENT_COMMIT_WORKFLOW.md": """# Agent Commit Workflow
 
+Commit intentionally. A commit should tell the next reader what changed and why.
+
+## Commit Rules
+
 - Commit only cohesive changes.
-- Mention ticket ids in commit messages when practical.
-- Do not commit generated dependency folders or local secrets.
+- Keep commits aligned to the active ticket.
+- Mention ticket ids when practical.
+- Do not commit secrets, local env files, generated dependency folders, caches, or unrelated churn.
 - Run configured validation before asking for merge or handoff.
+
+## Commit Message Format
+
+Preferred:
+
+```text
+T-0004 Fix login redirect after password reset
+```
+
+For repo-only work:
+
+```text
+T-0021 Update CI test workflow
+```
+
+If the repo has a conventional commit policy, use it and include the ticket id:
+
+```text
+fix(auth): handle password reset redirect (T-0004)
+```
+
+## Before Committing
+
+- Review `git diff`.
+- Confirm the diff matches the ticket scope.
+- Remove debugging output and temporary files.
+- Run validation or record why it could not run.
+- Update the ticket with changed files and validation.
+
+## Commit Body Guidance
+
+Use a body when the change needs context:
+
+```text
+T-0004 Fix login redirect after password reset
+
+- Preserves return URL through reset flow
+- Adds regression coverage for expired reset token
+- Updates ticket validation with npm test result
+```
+
+## When Not To Commit
+
+Do not commit when:
+
+- The user asked only for analysis.
+- Tests are failing and the failure is not documented.
+- The branch contains unrelated user changes.
+- The active ticket does not match the diff.
+- Sensitive data appears in the patch.
+
+## Handoff Without Commit
+
+If the agent cannot commit, the handoff must include:
+
+- Current branch.
+- Changed files.
+- Commands run.
+- Validation status.
+- Remaining work.
 """,
         "docs/REVIEW_CHECKLIST.md": """# Review Checklist
 
-- Active ticket exists and matches the change.
-- Acceptance criteria are covered.
-- Tests or validation evidence are recorded.
-- No unrelated files or sensitive data are included.
-- Handoff notes explain what changed and what remains.
+Use this checklist before handoff, commit, PR, or merge.
+
+## Blockers
+
+Stop and resolve before review if:
+
+- No active ticket exists for meaningful work.
+- The diff includes unrelated changes.
+- Secrets, tokens, private customer data, or local credentials are present.
+- Validation was skipped without a reason.
+- The work changes auth, permissions, payments, data, migrations, or release behavior without risk notes.
+- The ticket status does not match reality.
+
+## Ticket Review
+
+- Ticket id is clear.
+- Ticket type, priority, area, and status are accurate.
+- Acceptance criteria are met or gaps are documented.
+- Activity log names changed files and commands run.
+- Follow-up tickets exist for deferred work.
+- Handoff notes are short and actionable.
+
+## Code Review
+
+- Code follows local conventions.
+- Error paths are handled.
+- Edge cases are covered or ticketed.
+- No new dead code or unused files were introduced.
+- No unrelated formatting churn.
+- Comments explain non-obvious decisions, not obvious syntax.
+
+## Test And Validation Review
+
+- Relevant automated tests ran.
+- Lint/typecheck/build ran when configured.
+- Manual QA is recorded for UI or workflow changes.
+- Screenshots are captured or noted when visual output changed.
+- Known failing tests are explained.
+
+## Documentation Review
+
+Docs are updated if the change affects:
+
+- Setup or install steps.
+- Commands.
+- Environment variables.
+- Routes, APIs, or schemas.
+- Product behavior.
+- Security posture.
+- Agent workflow.
+
+## Handoff Review
+
+The final handoff should include:
+
+- What changed.
+- Why it changed.
+- How it was validated.
+- What remains.
+- Any risks or rollback notes.
 """,
     }
     if mode == "deep":
@@ -1022,46 +1537,363 @@ A ticket is ready only when another agent can start without guessing the outcome
             {
                 "CLAUDE.md": """# Claude Code Project Memory
 
-Use Agent Ticketing OS for repo work. Prefer one ticket per coherent outcome, update the ticket trail as work moves, and keep handoff notes short and operational.
+Use Agent Ticketing OS for repo work.
+
+## Operating Rules
+
+- Prefer natural language requests, but keep ticket records current.
+- Use one ticket per coherent outcome.
+- Move tickets as the work state changes.
+- Use planning mode for high-risk, multi-file, security, data, release, or architecture changes.
+- Keep handoff notes short, specific, and operational.
+
+## Claude Code Notes
+
+- Direct plugin skill calls use `/agent-ticketing-os:skill-name`.
+- `@` references files; it does not invoke plugin skills.
+- If a workflow feature such as planning or goals is available, use it for sprints and larger work before editing files.
+
+## Before Final Response
+
+- Confirm ticket status.
+- Summarize changed files and validation.
+- Mention skipped validation and risk.
+- Mention follow-up tickets.
 """,
                 "docs/AGENT_QA_GUIDE.md": """# Agent QA Guide
 
-Record the commands, screenshots, manual checks, migrations, or environment checks used to validate a ticket. If validation is not possible, explain the blocker and create a follow-up ticket when needed.
+QA is the evidence that a ticket is actually done. Record enough detail that another agent or human can trust the result without rerunning the entire investigation.
+
+## QA Principles
+
+- Validate the behavior the ticket promised, not just the file you changed.
+- Prefer existing project commands over invented checks.
+- Record commands exactly as run.
+- Summarize important output; do not paste long logs.
+- If validation cannot run, explain why and what should run later.
+
+## Validation Levels
+
+### Level 0: Static Review
+
+Use for docs-only or planning-only work.
+
+- Read changed files.
+- Check formatting.
+- Confirm links, paths, and command names.
+- Run `git diff --check` when available.
+
+### Level 1: Targeted Validation
+
+Use for focused code changes.
+
+- Run the smallest relevant test.
+- Run related lint/typecheck if configured.
+- Manually exercise the changed path when automated tests do not cover it.
+
+### Level 2: Broad Validation
+
+Use for shared code, data, auth, routing, API, CI, build, or release changes.
+
+- Run test suite or relevant package tests.
+- Run lint/typecheck/build when configured.
+- Check migrations or generated artifacts.
+- Review backward compatibility and rollback.
+
+### Level 3: Release Validation
+
+Use before release, deployment, or external handoff.
+
+- Run full configured validation.
+- Review completed tickets.
+- Confirm release notes or changelog.
+- Confirm rollback plan.
+- Verify environment and secret requirements without exposing secret values.
+
+## UI QA
+
+For UI changes, record:
+
+- Viewport or device checked.
+- Browser/platform checked.
+- Main happy path.
+- Empty, loading, error, and overflow states when relevant.
+- Screenshots or notes for visual changes.
+
+## API QA
+
+For API changes, record:
+
+- Endpoint or method checked.
+- Request shape.
+- Response shape.
+- Auth/permission behavior.
+- Error cases.
+- Backward compatibility notes.
+
+## Data/Migration QA
+
+For data changes, record:
+
+- Migration command.
+- Rollback or restore approach.
+- Data risk.
+- Backfill or cleanup requirement.
+- Verification query or check.
+
+## QA Log Template
+
+```text
+Validation:
+- Command: <exact command>
+  Result: passed/failed/skipped
+  Notes: <short summary>
+- Manual check: <workflow>
+  Result: passed/failed/skipped
+  Notes: <short summary>
+```
+
+## Skipped Validation Template
+
+```text
+Validation skipped:
+- Reason:
+- Risk:
+- Recommended next command:
+- Follow-up ticket:
+```
 """,
                 "docs/AGENT_HANDOFF_TEMPLATE.md": """# Agent Handoff Template
 
-## Current State
+Use this template when pausing, handing off, opening review, or closing a ticket.
+
+## Ticket
+
+- ID:
+- Title:
+- Status:
+- Branch:
+- Related tickets:
+
+## Outcome
+
+- What changed:
+- Why it changed:
+- User-visible impact:
+
+## Scope
+
+- In scope:
+- Out of scope:
+- Follow-up tickets:
+
+## Files Touched
+
+```text
+path/to/file - reason
+```
 
 ## Files Inspected
 
-## Commands Run
+```text
+path/to/file - what was learned
+```
 
-## What Changed
+## Decisions Made
 
-## Next Step
-""",
-                "docs/RELEASE_RUNBOOK.md": """# Release Runbook
-
-1. Review tickets completed since the last release.
-2. Confirm validation evidence is recorded.
-3. Update release notes or changelog.
-4. Confirm rollback or mitigation notes for risky changes.
-""",
-                "docs/SECURITY_AGENT_PROTOCOL.md": """# Security Agent Protocol
-
-- Treat auth, permissions, secrets, injection, dependency, and data exposure work as security-sensitive.
-- Do not paste secrets into tickets or docs.
-- Create security tickets for discovered risks and mark validation evidence clearly.
-""",
-                ".github/pull_request_template.md": """## Ticket
-
-## Summary
+- Decision:
+  - Reason:
+  - Alternatives considered:
+  - Follow-up:
 
 ## Validation
 
+- Command:
+  - Result:
+  - Notes:
+- Manual check:
+  - Result:
+  - Notes:
+- Skipped validation:
+  - Reason:
+  - Risk:
+  - Recommended next step:
+
+## Risks And Blockers
+
+- Risk:
+- Blocker:
+- Mitigation:
+
+## Next Agent Should
+
+1.
+2.
+3.
+
+## Final Notes
+
+- Anything surprising:
+- Anything intentionally deferred:
+- Anything the user should decide:
+""",
+                "docs/RELEASE_RUNBOOK.md": """# Release Runbook
+
+Use this runbook when preparing a release, deployment, client handoff, or milestone close.
+
+## Release Intake
+
+- Release name:
+- Target date:
+- Owner:
+- Environment:
+- Included tickets:
+- Excluded tickets:
+- Risk level:
+
+## Pre-Release Checklist
+
+- Completed tickets reviewed.
+- Blocked tickets are not accidentally included.
+- Validation evidence exists for included tickets.
+- Release notes or changelog updated.
+- Migrations and env var changes are documented.
+- Rollback plan exists for risky changes.
+- Security-sensitive changes have explicit review notes.
+- User-facing behavior changes are summarized.
+
+## Ticket Review
+
+For each included ticket, confirm:
+
+- Status is `done` or explicitly approved for release.
+- Acceptance criteria are met.
+- Validation is recorded.
+- Follow-ups exist for deferred work.
+- User-facing changes are included in release notes.
+
+## Validation Matrix
+
+```text
+Area:
+Command/manual check:
+Result:
+Owner:
+Notes:
+```
+
+## Rollback Plan
+
+- What can be reverted:
+- What cannot be safely reverted:
+- Data restore requirement:
+- Feature flag or config rollback:
+- Owner for rollback decision:
+
+## Release Notes Template
+
+```md
+## Added
+
+## Changed
+
+## Fixed
+
+## Security
+
+## Known Issues
+
+## Validation
+```
+
+## Post-Release
+
+- Monitor logs/errors.
+- Confirm critical workflows.
+- Move release tickets to completed archive.
+- Create follow-up tickets for issues found after release.
+""",
+                "docs/SECURITY_AGENT_PROTOCOL.md": """# Security Agent Protocol
+
+Security-sensitive work needs stricter handling than ordinary tickets.
+
+## Security-Sensitive Areas
+
+Treat these as security work:
+
+- Authentication.
+- Authorization and permissions.
+- Secrets and token handling.
+- PII, customer data, or private business data.
+- File upload/download.
+- Webhooks.
+- Payment or billing flows.
+- Dependency vulnerabilities.
+- Injection, XSS, SSRF, CSRF, path traversal, deserialization.
+- Logging and analytics that may expose sensitive data.
+
+## Handling Rules
+
+- Do not paste secrets into tickets, logs, docs, commits, or PR text.
+- Refer to secret names, not values.
+- Do not weaken auth, validation, or permission checks to make tests pass.
+- Do not add broad permissions without documenting why.
+- Do not store sensitive reproduction data in repo files.
+- Create a `security` ticket for discovered risks.
+
+## Security Ticket Requirements
+
+- Affected boundary.
+- Impact.
+- Exploit preconditions.
+- Risk level.
+- Mitigation approach.
+- Validation plan.
+- Residual risk.
+
+## Validation Expectations
+
+Security validation should include:
+
+- Positive case: allowed user/action succeeds.
+- Negative case: disallowed user/action fails.
+- Input validation or sanitization check.
+- No sensitive values in logs or errors.
+- Dependency or configuration check when relevant.
+
+## Disclosure And Handoff
+
+If a vulnerability may already exist:
+
+- Keep details minimal in broad docs.
+- Put sensitive details only where the project expects them.
+- Ask the user before creating public issues.
+- Record that a security-sensitive follow-up exists without exposing exploit details.
+""",
+                ".github/pull_request_template.md": """## Ticket
+
+Ticket:
+Status:
+
+## Summary
+
+-
+
+## Validation
+
+- [ ] Tests:
+- [ ] Lint/typecheck/build:
+- [ ] Manual QA:
+- [ ] Not run, reason:
+
 ## Risk And Rollback
 
+- Risk:
+- Rollback:
+
 ## Follow-ups
+
+-
 """,
             }
         )

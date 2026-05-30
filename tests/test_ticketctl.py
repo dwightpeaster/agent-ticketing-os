@@ -56,6 +56,8 @@ class TicketCtlTest(unittest.TestCase):
             self.assertIn("[T-0002]", (repo / "docs/tickets/COMPLETED.md").read_text(encoding="utf-8"))
             self.assertTrue((repo / "docs/tickets/BACKLOG.md").exists())
             self.assertTrue((repo / "docs/tickets/COMPLETED.md").exists())
+            self.assertIn("## Release Milestones", (repo / "docs/ROADMAP.md").read_text(encoding="utf-8"))
+            self.assertIn("## Decision Template", (repo / "docs/PRODUCT_DECISIONS.md").read_text(encoding="utf-8"))
 
     def test_sprint_lifecycle(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -83,6 +85,16 @@ class TicketCtlTest(unittest.TestCase):
             self.assertTrue((repo / "AGENTS.md").exists())
             self.assertTrue((repo / "CLAUDE.md").exists())
             self.assertTrue((repo / ".github/pull_request_template.md").exists())
+            ticket_standards = (repo / "docs/TICKET_STANDARDS.md").read_text(encoding="utf-8")
+            qa_guide = (repo / "docs/AGENT_QA_GUIDE.md").read_text(encoding="utf-8")
+            handoff = (repo / "docs/AGENT_HANDOFF_TEMPLATE.md").read_text(encoding="utf-8")
+            security = (repo / "docs/SECURITY_AGENT_PROTOCOL.md").read_text(encoding="utf-8")
+            self.assertIn("## Bug Intake Checklist", ticket_standards)
+            self.assertIn("## Feature Intake Checklist", ticket_standards)
+            self.assertIn("## Validation Levels", qa_guide)
+            self.assertIn("## Skipped Validation Template", qa_guide)
+            self.assertIn("## Decisions Made", handoff)
+            self.assertIn("## Security-Sensitive Areas", security)
             provider = self.load_json(repo, ".tickets/sync/github.json")
             self.assertEqual(provider["mode"], "hybrid")
             self.assertEqual(provider["external_project"], "owner/repo")
