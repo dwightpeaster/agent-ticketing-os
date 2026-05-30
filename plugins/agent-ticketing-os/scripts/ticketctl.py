@@ -516,16 +516,256 @@ def write_sprint_markdown(root: Path, sprint: dict[str, Any]) -> None:
 def write_templates(root: Path) -> None:
     template_dir = tickets_dir(root) / "templates"
     template_dir.mkdir(parents=True, exist_ok=True)
-    examples = {
-        "feature.md": "Feature tickets should describe the user, workflow, acceptance criteria, and validation.",
-        "bug.md": "Bug tickets should include expected behavior, actual behavior, reproduction, severity, and regression tests.",
-        "repo.md": "Repo tickets should include maintenance value, affected systems, risk, rollback, and validation commands.",
-        "research.md": "Research tickets should define the question, decision needed, sources inspected, and resulting follow-ups.",
+    templates = {
+        "bug.md": """# Bug Ticket Template
+
+Use this template when broken behavior, regressions, crashes, bad data, or UI defects need to be tracked.
+
+## Summary
+
+One sentence describing the broken behavior.
+
+## Expected Behavior
+
+- What should happen?
+- What does the user or system expect?
+
+## Actual Behavior
+
+- What happens instead?
+- Include error text, screenshots, logs, or symptoms when useful.
+
+## Reproduction Steps
+
+1.
+2.
+3.
+
+## Impact
+
+- Severity: P0/P1/P2/P3/P4
+- Affected users or workflows:
+- Frequency:
+- Regression: yes/no/unknown
+
+## Suspected Area
+
+- Module, route, screen, API, job, workflow, or system likely involved:
+- Files already inspected:
+
+## Acceptance Criteria
+
+- [ ] The bug is fixed for the reported path.
+- [ ] A regression check exists or the reason it cannot exist is documented.
+- [ ] Related edge cases are covered or follow-up tickets exist.
+
+## Validation Plan
+
+- Automated command:
+- Manual check:
+- Data/log check:
+
+## Agent Handoff
+
+- Current hypothesis:
+- What was tried:
+- What the next agent should inspect first:
+""",
+        "feature.md": """# Feature Ticket Template
+
+Use this template for new user-facing behavior, workflow improvements, or product capabilities.
+
+## Summary
+
+One sentence describing the outcome.
+
+## User And Workflow
+
+- User or actor:
+- Current workflow:
+- Desired workflow:
+- Why this matters:
+
+## Problem Or Opportunity
+
+- What pain, gap, or goal does this address?
+- What happens if this is not built?
+
+## Scope
+
+### In Scope
+
+-
+
+### Out Of Scope
+
+-
+
+## Acceptance Criteria
+
+- [ ] User can...
+- [ ] System handles...
+- [ ] Error/empty/loading states are handled when relevant.
+
+## UX And Content Notes
+
+- Screens, routes, commands, copy, or interactions affected:
+- Accessibility or responsive behavior:
+
+## Data/API Notes
+
+- Data needed:
+- API or schema changes:
+- Permissions/auth considerations:
+
+## Dependencies
+
+- Depends on:
+- Blocks:
+- External decisions:
+
+## Validation Plan
+
+- Automated command:
+- Manual workflow:
+- Screenshot or visual check:
+
+## Agent Handoff
+
+- Key files to inspect:
+- Risks:
+- Follow-up tickets:
+""",
+        "repo.md": """# Repo Ticket Template
+
+Use this template for maintenance, build, CI, dependency, architecture, docs, setup, or agent-workflow changes.
+
+## Summary
+
+One sentence describing the repo improvement.
+
+## Maintenance Value
+
+- What does this improve?
+- Who benefits?
+- What gets easier, safer, faster, or clearer?
+
+## Affected Systems
+
+- Build:
+- Tests:
+- CI/CD:
+- Dependencies:
+- Docs:
+- Local setup:
+- Agent workflow:
+
+## Current State
+
+- What is happening now?
+- What evidence shows this needs work?
+
+## Target State
+
+- What should be true after this ticket?
+- What should not change?
+
+## Risk And Rollback
+
+- Risk level: low/medium/high
+- Possible breakage:
+- Rollback plan:
+
+## Acceptance Criteria
+
+- [ ] The repo improvement is implemented.
+- [ ] Existing workflows still work.
+- [ ] Docs or commands are updated when needed.
+- [ ] Validation proves the repo remains healthy.
+
+## Validation Plan
+
+- Command:
+- Manual check:
+- CI check:
+
+## Agent Handoff
+
+- Files to inspect:
+- Decisions to preserve:
+- Follow-up cleanup:
+""",
+        "research.md": """# Research Ticket Template
+
+Use this template when the output is understanding, a recommendation, a decision, or follow-up tickets rather than immediate implementation.
+
+## Research Question
+
+What question needs to be answered?
+
+## Decision Needed
+
+- What decision will this research unblock?
+- Who or what depends on the answer?
+
+## Context
+
+- Why does this matter now?
+- What is already known?
+- What assumptions should be tested?
+
+## Sources To Inspect
+
+- Code paths:
+- Docs:
+- Issues/tickets:
+- External references:
+- People/user input:
+
+## Options
+
+### Option A
+
+- Pros:
+- Cons:
+- Risks:
+
+### Option B
+
+- Pros:
+- Cons:
+- Risks:
+
+## Recommendation
+
+- Recommended path:
+- Reason:
+- Confidence:
+- Open questions:
+
+## Acceptance Criteria
+
+- [ ] Relevant sources were inspected.
+- [ ] Options and tradeoffs are documented.
+- [ ] Recommendation or decision is recorded.
+- [ ] Follow-up tickets exist for implementation work.
+
+## Validation Plan
+
+- How to verify the recommendation is grounded:
+- Commands or experiments:
+
+## Agent Handoff
+
+- Sources inspected:
+- Key findings:
+- Next step:
+""",
     }
-    for name, text in examples.items():
+    for name, text in templates.items():
         path = template_dir / name
         if not path.exists():
-            path.write_text(f"# {name.removesuffix('.md').title()} Template\n\n{text}\n", encoding="utf-8")
+            path.write_text(text.rstrip() + "\n", encoding="utf-8")
 
 
 def write_split_board_scaffold(root: Path, config: dict[str, Any]) -> None:

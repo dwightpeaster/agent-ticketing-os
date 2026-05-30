@@ -39,6 +39,10 @@ class TicketCtlTest(unittest.TestCase):
             self.assertTrue((repo / ".tickets" / "CHANGELOG.md").exists())
             self.assertTrue((repo / ".tickets" / "sprints").is_dir())
             self.assertTrue((repo / ".tickets" / "sync").is_dir())
+            self.assertIn("## Reproduction Steps", (repo / ".tickets/templates/bug.md").read_text(encoding="utf-8"))
+            self.assertIn("## User And Workflow", (repo / ".tickets/templates/feature.md").read_text(encoding="utf-8"))
+            self.assertIn("## Risk And Rollback", (repo / ".tickets/templates/repo.md").read_text(encoding="utf-8"))
+            self.assertIn("## Recommendation", (repo / ".tickets/templates/research.md").read_text(encoding="utf-8"))
 
     def test_strict_profile_uses_canonical_engine_values(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
