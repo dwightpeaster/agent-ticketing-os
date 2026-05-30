@@ -191,3 +191,7 @@ External tracker setup creates provider hook files such as `.tickets/sync/github
 - Auditable: tickets, decisions, sprints, tests, and handoffs live in git.
 - Portable: installable in both Codex and Claude Code.
 - Extensible: external tracker sync can be added through available tools or MCP connectors.
+
+## License
+
+MIT
