@@ -1,6 +1,6 @@
 {
   "name": "agent-ticketing-os",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Agent Ticketing OS: repo-local ticketing plus optional agent operating mode for Markdown project workflows.",
   "author": {
     "name": "Dwight Peaster"

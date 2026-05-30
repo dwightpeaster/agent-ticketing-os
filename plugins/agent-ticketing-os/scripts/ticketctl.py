@@ -2110,26 +2110,86 @@ If a vulnerability may already exist:
 - Ask the user before creating public issues.
 - Record that a security-sensitive follow-up exists without exposing exploit details.
 """,
-                ".github/pull_request_template.md": """## Ticket
+                ".github/pull_request_template.md": """# Pull Request
 
-Ticket:
-Status:
+## Ticket
+
+- Ticket:
+- Ticket status:
+- Related tickets:
+- Sprint/milestone:
 
 ## Summary
+
+- What changed:
+- Why it changed:
+- User or system impact:
+
+## Scope
+
+### In Scope
+
+-
+
+### Out Of Scope
+
+-
+
+## Changes Made
 
 -
 
 ## Validation
 
 - [ ] Tests:
-- [ ] Lint/typecheck/build:
+- [ ] Lint:
+- [ ] Typecheck:
+- [ ] Build:
 - [ ] Manual QA:
+- [ ] Screenshot or visual check:
+- [ ] Migration/data check:
+- [ ] Security/permission check:
 - [ ] Not run, reason:
+
+## Acceptance Criteria
+
+- [ ] Ticket acceptance criteria are satisfied.
+- [ ] Gaps are documented.
+- [ ] Deferred work has follow-up tickets.
 
 ## Risk And Rollback
 
-- Risk:
-- Rollback:
+- Risk level: low/medium/high
+- Risk summary:
+- Rollback plan:
+- Data or migration risk:
+- Feature flag/config rollback:
+
+## Security And Privacy
+
+- [ ] No secrets, tokens, credentials, private customer data, or private URLs are included.
+- [ ] Auth/permission changes are documented.
+- [ ] Logs/errors do not expose sensitive data.
+- [ ] Security-sensitive behavior was validated or a follow-up ticket exists.
+
+## Documentation
+
+- [ ] User-facing docs updated.
+- [ ] Developer/setup docs updated.
+- [ ] Agent/ticketing docs updated.
+- [ ] No docs needed, reason:
+
+## Review Notes
+
+- Files/areas needing close review:
+- Known tradeoffs:
+- Questions for reviewer:
+
+## Handoff
+
+- Next step after merge:
+- Monitoring or follow-up:
+- Release note:
 
 ## Follow-ups
 
