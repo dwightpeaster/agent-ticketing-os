@@ -1,7 +1,7 @@
 {
   "name": "agent-ticketing-os",
   "description": "Ticket-first workflows, sprints, sync, and optional operating guardrails for coding agents.",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "author": {
     "name": "Dwight Peaster"
   },

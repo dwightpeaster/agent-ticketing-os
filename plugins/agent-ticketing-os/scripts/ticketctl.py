@@ -768,6 +768,71 @@ What question needs to be answered?
             path.write_text(text.rstrip() + "\n", encoding="utf-8")
 
 
+def decisions_log_template(project: str) -> str:
+    return f"""# Decisions
+
+This is the lightweight decision log for {project}. Use it for implementation, workflow, sync, sprint, and ticket-level decisions that future agents should not rediscover.
+
+For durable product or architecture decisions, also update `docs/PRODUCT_DECISIONS.md`.
+
+## How To Use This Log
+
+- Record decisions that affect implementation direction, validation, scope, or follow-up work.
+- Keep entries short, factual, and linked to ticket ids.
+- Prefer a decision entry over burying important context in chat.
+- Do not store secrets, credentials, private customer data, tokens, or private URLs.
+- If a decision changes roadmap, product behavior, architecture, security, setup, or release flow, promote it to `docs/PRODUCT_DECISIONS.md`.
+
+## Decision Entry Template
+
+```md
+### DEC-0001: Short decision title
+
+Date: YYYY-MM-DD
+Status: proposed | accepted | superseded
+Tickets: T-0000
+Area: app | api | docs | repo | security | release
+Owner: human | agent | team
+
+Context:
+- What forced the decision?
+
+Options considered:
+- Option A:
+- Option B:
+
+Decision:
+- What was decided?
+
+Reason:
+- Why this option?
+
+Consequences:
+- What changes because of this?
+- What risk remains?
+
+Follow-ups:
+- T-0000
+```
+
+## Accepted Decisions
+
+- None yet.
+
+## Proposed Decisions
+
+- None yet.
+
+## Superseded Decisions
+
+- None yet.
+
+## Open Questions
+
+- None yet.
+"""
+
+
 def write_split_board_scaffold(root: Path, config: dict[str, Any]) -> None:
     locations = config["ticketing"].get("locations", {})
     for location in locations.values():
@@ -1099,7 +1164,7 @@ def cmd_init(args: argparse.Namespace) -> None:
         write_split_board_scaffold(root, config)
     decisions = td / "DECISIONS.md"
     if not decisions.exists():
-        decisions.write_text("# Decisions\n\n- No decisions recorded yet.\n", encoding="utf-8")
+        decisions.write_text(decisions_log_template(config["project"]["name"]), encoding="utf-8")
     sync_files(root)
     print(f"Initialized ticketing system in {td}")
 
