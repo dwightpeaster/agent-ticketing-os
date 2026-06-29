@@ -1,6 +1,6 @@
 ---
 name: agent-ticketing-sync
-description: Sync Agent Ticketing OS tickets with external issue platforms through available MCP/tools such as GitHub Issues, Jira, Linear, or another tracker. Use when the user says "$agent-ticketing-sync", "sync tickets with GitHub", "sync to Jira", "import issues", "mirror backlog", or asks to connect an external tracker.
+description: Configure external tracker sync for Agent Ticketing OS.
 ---
 
 # Agent Ticketing Sync
@@ -16,6 +16,8 @@ Use hybrid sync:
 - Local Markdown keeps implementation details, validation, and agent handoff context.
 - External tools keep collaboration state, assignment, comments, and stakeholder visibility.
 
+For Linear-specific setup, use `$linear-setup` when the user wants to choose between repo-primary, hybrid, and Linear-primary operation.
+
 ## Workflow
 
 1. Identify provider: GitHub, Jira, Linear, or another MCP-backed tracker.
@@ -28,6 +30,12 @@ python3 <package-root>/scripts/ticketctl.py sync-hooks --root . --provider githu
 ```
 
 Use `--provider jira`, `--provider linear`, or `--provider custom` when appropriate.
+
+For Linear with source-of-truth policy:
+
+```bash
+python3 <package-root>/scripts/ticketctl.py linear-setup --root . --mode linear-primary --team "<team>" --project "<project>"
+```
 
 5. Store provider settings and external IDs in `.tickets/config.json` or ticket metadata.
 6. Never overwrite local or external changes silently.

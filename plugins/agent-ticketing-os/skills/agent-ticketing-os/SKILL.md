@@ -1,6 +1,6 @@
 ---
 name: agent-ticketing-os
-description: Install or initialize the complete Agent Ticketing OS, including both the ticketing system and optional agent operating mode. Use when the user says "$agent-ticketing-os", "install the whole ticketing system", "set up the full agent ticketing OS", "install both ticketing and operating mode", or wants the complete package instead of only ticketing or only operating guardrails.
+description: Install the full Agent Ticketing OS.
 ---
 
 # Agent Ticketing OS

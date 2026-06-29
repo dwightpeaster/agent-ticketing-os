@@ -151,6 +151,30 @@ The smaller skills, such as ticket creation, ticket movement, sprint planning, a
 - **Ticketing only**: local tickets, backlog, board, sprints, and sync config.
 - **Operating only**: branch, commit, PR, QA, review, release, security, and handoff rules on top of an existing ticket workflow.
 
+## Optional Linear Setup
+
+Agent Ticketing OS starts repo-primary by default. If you want Linear to become the shared project layer, initialize Agent OS first, then run the Linear setup skill.
+
+Codex:
+
+```text
+$linear-setup
+```
+
+Claude Code:
+
+```text
+/agent-ticketing-os:linear-setup
+```
+
+The setup asks for the Linear team, project name, and source-of-truth mode:
+
+- **repo-primary**: local tickets stay primary; Linear mirrors stakeholder-visible work.
+- **hybrid**: local tickets keep implementation detail; Linear keeps project visibility.
+- **linear-primary**: Linear is primary; local files stay lightweight.
+
+When Linear MCP/tools are available, the agent can create or reuse the Linear project, labels, work lanes, changelog document, and status-update workflow.
+
 ## What Gets Created
 
 Default ticketing setup creates:

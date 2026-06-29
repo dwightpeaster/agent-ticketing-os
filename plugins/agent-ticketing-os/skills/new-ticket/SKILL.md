@@ -1,6 +1,6 @@
 ---
 name: new-ticket
-description: Create a new repo-local ticket using the agent-ticketing system. Use when the user says "$new-ticket", "new ticket", "create a ticket", "file a bug", "add this to the backlog", or asks to track work in the local ticket system.
+description: Create a repo-local ticket.
 ---
 
 # New Ticket

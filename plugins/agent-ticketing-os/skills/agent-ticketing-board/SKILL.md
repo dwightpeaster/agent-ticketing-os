@@ -1,6 +1,6 @@
 ---
 name: agent-ticketing-board
-description: Show, summarize, or refresh the Agent Ticketing OS board and backlog. Use when the user says "$agent-ticketing-board", "show ticket board", "show backlog", "list open tickets", "what tickets are active", or asks for ticket status.
+description: Show or refresh the Agent Ticketing OS board.
 ---
 
 # Agent Ticketing Board

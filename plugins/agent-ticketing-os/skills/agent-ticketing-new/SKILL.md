@@ -1,6 +1,6 @@
 ---
 name: agent-ticketing-new
-description: Create a new Agent Ticketing OS ticket. Use when the user says "$agent-ticketing-new", "new ticket", "create a ticket", "file a bug", "add this to the backlog", "track this issue", or "we need a ticket for x".
+description: Create an Agent Ticketing OS ticket.
 ---
 
 # Agent Ticketing New

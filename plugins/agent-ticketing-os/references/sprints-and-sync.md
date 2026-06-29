@@ -156,6 +156,8 @@ Cons:
 - Work can stall without network/auth/tool availability.
 - Git history no longer captures the full planning record.
 
+Recommended when the external platform is Linear and the project needs stakeholder visibility more than repo-local planning detail. In Linear-primary mode, local files should usually store only config, external ids, and short handoff notes.
+
 ### Hybrid
 
 Local tickets are canonical for implementation details and handoffs; external tools hold high-level status and collaboration.
@@ -172,6 +174,25 @@ Cons:
 - Needs conflict handling.
 
 Recommended default: **Hybrid with local implementation detail as canonical**.
+
+## Linear Primary Trial
+
+Use Linear primary when the user wants to test whether Linear can replace most repo-local ticket files.
+
+Recommended behavior:
+
+- Create Linear issues first for bugs, features, requests, documentation, testing, deployment, and blockers.
+- Keep a Linear changelog document as the human-readable history.
+- Use Linear project status updates for stakeholder summaries.
+- Create local tickets only for implementation-heavy handoffs, offline work, or validation detail that should live in git.
+- Store Linear ids in `.tickets/sync/linear.json` or ticket metadata when local mirrors exist.
+- Keep local mirror records compact; avoid copying full Linear issue bodies into the repo.
+
+Run:
+
+```bash
+python3 <package-root>/scripts/ticketctl.py linear-setup --root . --mode linear-primary --team "<team>" --project "<project>"
+```
 
 ## MCP Strategy
 

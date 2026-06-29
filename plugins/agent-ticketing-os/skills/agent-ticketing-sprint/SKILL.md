@@ -1,6 +1,6 @@
 ---
 name: agent-ticketing-sprint
-description: Create, plan, update, or close lightweight Markdown sprints for Agent Ticketing OS. Use when the user says "$agent-ticketing-sprint", "start a sprint", "plan this sprint", "add this ticket to the sprint", "close the sprint", or asks for sprint status.
+description: Manage lightweight Agent Ticketing OS sprints.
 ---
 
 # Agent Ticketing Sprint

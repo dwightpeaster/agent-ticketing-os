@@ -1,6 +1,6 @@
 ---
 name: ticket-board
-description: Show or refresh the repo-local ticket board and backlog. Use when the user says "$ticket-board", "show the board", "show backlog", "list tickets", "what is open", or asks for ticket status.
+description: Show or refresh the repo-local ticket board.
 ---
 
 # Ticket Board
