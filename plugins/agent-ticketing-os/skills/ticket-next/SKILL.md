@@ -1,6 +1,6 @@
 ---
 name: ticket-next
-description: Pick the next best repo-local ticket for an agent to work on. Use when the user says "$ticket-next", "what should we work on next", "pick the next ticket", or asks for the next backlog item.
+description: Pick the next repo-local ticket.
 ---
 
 # Ticket Next

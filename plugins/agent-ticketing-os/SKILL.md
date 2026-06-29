@@ -1,6 +1,6 @@
 ---
 name: agent-ticketing
-description: Build and operate a repo-local agent ticketing system for backlog, bugs, changes, repo management, handoffs, and implementation tracking. Use when initializing a new project workflow, creating or triaging tickets, planning agent work, tracking bug fixes, managing backlog status, or maintaining local Markdown issue records for Claude, Codex, or other Agent Skills-compatible coding agents. Also use for natural language requests like "create a ticket for x", "new bug for x", "add this to the backlog", "what should we work on next", "move T-0001 to review", or "close this ticket".
+description: Repo-local agent tickets, backlog, board, sync, and handoff workflow.
 ---
 
 # Agent Ticketing
@@ -25,6 +25,8 @@ In clients that support multi-skill packages, direct calls are available when us
 - `$agent-operating-init` for the optional full agent operating mode.
 - `$agent-operating-review` for non-mutating readiness checks.
 
+Linear is optional and configured after normal setup. If the user asks to connect Agent Ticketing OS to Linear or switch to Linear-primary operation, use `$linear-setup`.
+
 In Claude Code, plugin skills are invoked as namespaced slash commands. For example:
 
 - `/agent-ticketing-os:agent-ticketing-os`
@@ -45,6 +47,8 @@ Support three setup paths:
 - **Full OS**: `$agent-ticketing-os` initializes ticketing and the operating layer.
 - **Ticketing only**: `$agent-ticketing-init` initializes tickets, backlog, board, sprints, and sync config.
 - **Operating only**: `$agent-operating-init` adds branch, commit, PR, QA, review, release, security, and handoff guardrails on top of an existing ticketing workflow.
+
+Linear setup is a post-install reconfiguration step. Agent Ticketing OS remains repo-primary until `$linear-setup` is run.
 
 ## Intent Routing
 

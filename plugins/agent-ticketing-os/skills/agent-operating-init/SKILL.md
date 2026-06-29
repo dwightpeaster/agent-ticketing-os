@@ -1,6 +1,6 @@
 ---
 name: agent-operating-init
-description: Initialize the optional Agent Operating Mode on top of Agent Ticketing OS. Use when the user says "$agent-operating-init", "set up agent operating mode", "install the full agent workflow", "make this repo agent-ready", or wants ticketing plus branch, commit, PR, QA, review, release, security, and handoff guardrails.
+description: Initialize Agent Operating Mode.
 ---
 
 # Agent Operating Init

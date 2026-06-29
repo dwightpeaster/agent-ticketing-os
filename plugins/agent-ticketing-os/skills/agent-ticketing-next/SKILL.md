@@ -1,6 +1,6 @@
 ---
 name: agent-ticketing-next
-description: Select the next best Agent Ticketing OS ticket to work on. Use when the user says "$agent-ticketing-next", "what should we work on next", "pick the next ticket", "next backlog item", or asks what an agent should do next.
+description: Pick the next Agent Ticketing OS ticket.
 ---
 
 # Agent Ticketing Next

@@ -1,6 +1,6 @@
 ---
 name: agent-ticketing-init
-description: Initialize a repository for Agent Ticketing OS ticketing. Use when the user says "$agent-ticketing-init", "set up ticketing", "initialize ticketing", "install the ticket system in this repo", "start a backlog for this repo", or wants the repo prepared for agent-readable tickets, backlog, board, decisions, and handoffs.
+description: Initialize Agent Ticketing OS ticketing.
 ---
 
 # Agent Ticketing Init

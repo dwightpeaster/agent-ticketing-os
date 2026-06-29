@@ -1,6 +1,6 @@
 ---
 name: agent-operating-review
-description: Run Agent Operating Mode readiness checks for a ticket, branch, PR, handoff, or local change. Use when the user says "$agent-operating-review", "is this ready", "review the agent workflow", "check readiness", or asks whether work can be committed, PR'd, merged, or handed off.
+description: Check readiness for agent work, tickets, PRs, or handoffs.
 ---
 
 # Agent Operating Review

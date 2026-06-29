@@ -100,6 +100,12 @@ class TicketCtlTest(unittest.TestCase):
             qa_guide = (repo / "docs/AGENT_QA_GUIDE.md").read_text(encoding="utf-8")
             handoff = (repo / "docs/AGENT_HANDOFF_TEMPLATE.md").read_text(encoding="utf-8")
             security = (repo / "docs/SECURITY_AGENT_PROTOCOL.md").read_text(encoding="utf-8")
+            agents = (repo / "AGENTS.md").read_text(encoding="utf-8")
+            claude = (repo / "CLAUDE.md").read_text(encoding="utf-8")
+            implementation = (repo / "docs/IMPLEMENTATION_STANDARDS.md").read_text(encoding="utf-8")
+            writing = (repo / "docs/WRITING_STANDARDS.md").read_text(encoding="utf-8")
+            dead_code = (repo / "docs/DEAD_CODE_REMOVAL.md").read_text(encoding="utf-8")
+            repo_map = (repo / "docs/REPO_MAP.md").read_text(encoding="utf-8")
             self.assertIn("## Security And Privacy", pr_template)
             self.assertIn("## Review Notes", pr_template)
             self.assertIn("## Bug Intake Checklist", ticket_standards)
@@ -108,11 +114,50 @@ class TicketCtlTest(unittest.TestCase):
             self.assertIn("## Skipped Validation Template", qa_guide)
             self.assertIn("## Decisions Made", handoff)
             self.assertIn("## Security-Sensitive Areas", security)
+            self.assertIn("## Start Here Every Time", agents)
+            self.assertIn(".tickets/sync/linear-mcp.md", agents)
+            self.assertIn(".tickets/sync/linear-mcp.md", claude)
+            self.assertIn("## Before Building New Tooling", implementation)
+            self.assertIn("## Tickets And Handoffs", writing)
+            self.assertIn("## Before Deleting", dead_code)
+            self.assertIn("## Area Agent Docs", repo_map)
             provider = self.load_json(repo, ".tickets/sync/github.json")
             self.assertEqual(provider["mode"], "hybrid")
             self.assertEqual(provider["external_project"], "owner/repo")
             config = self.load_json(repo, ".tickets/config.json")
             self.assertIn("github", config["sync"])
+
+    def test_linear_setup_configures_linear_primary_policy(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            repo = Path(temp)
+            self.run_ctl(repo, "init")
+            self.run_ctl(
+                repo,
+                "linear-setup",
+                "--mode",
+                "linear-primary",
+                "--team",
+                "SalesForce",
+                "--project",
+                "ProFence Quote System",
+            )
+
+            provider = self.load_json(repo, ".tickets/sync/linear.json")
+            self.assertEqual(provider["provider"], "linear")
+            self.assertEqual(provider["mode"], "external-first")
+            self.assertEqual(provider["linear_mode"], "linear-primary")
+            self.assertEqual(provider["team"], "SalesForce")
+            self.assertEqual(provider["project"], "ProFence Quote System")
+            self.assertFalse(provider["create_local_mirror"])
+            self.assertIn("bug", provider["labels"])
+            self.assertIn("Deployment", provider["work_lanes"])
+            self.assertEqual(provider["changelog_title"], "ProFence Quote System Changelog")
+
+            config = self.load_json(repo, ".tickets/config.json")
+            self.assertIn("linear", config["sync"])
+            policy = (repo / ".tickets/sync/linear-mcp.md").read_text(encoding="utf-8")
+            self.assertIn("Mode: `linear-primary`", policy)
+            self.assertIn("Linear is the planning source of truth", policy)
 
 
 if __name__ == "__main__":

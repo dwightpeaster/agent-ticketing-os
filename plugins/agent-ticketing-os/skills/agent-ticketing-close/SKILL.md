@@ -1,6 +1,6 @@
 ---
 name: agent-ticketing-close
-description: Close, resolve, mark done, or won't-do an Agent Ticketing OS ticket. Use when the user says "$agent-ticketing-close", "close T-0001", "mark this done", "resolve this ticket", or "won't do this ticket".
+description: Close or resolve an Agent Ticketing OS ticket.
 ---
 
 # Agent Ticketing Close

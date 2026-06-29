@@ -20,6 +20,14 @@ STATUS_SCORE = {"ready": 50, "inbox": 10, "backlog": 20, "blocked": -100, "in_pr
 ACTIVE_STATUSES = {"ready", "in_progress", "review", "blocked"}
 SYNC_PROVIDERS = ["github", "jira", "linear", "custom"]
 SYNC_MODES = ["local-first", "hybrid", "external-first"]
+LINEAR_SETUP_MODES = ["repo-primary", "hybrid", "linear-primary"]
+LINEAR_MODE_TO_SYNC_MODE = {
+    "repo-primary": "local-first",
+    "hybrid": "hybrid",
+    "linear-primary": "external-first",
+}
+DEFAULT_LINEAR_LABELS = ["bug", "feature", "request", "documentation", "testing", "deployment", "blocked", "changelog"]
+DEFAULT_LINEAR_WORK_LANES = ["Quote Workflow", "Salesforce Build", "Assistant Behavior", "Testing & Validation", "Deployment", "Backlog"]
 
 
 DISPLAY_STATUS = {
@@ -1446,6 +1454,23 @@ def operating_docs(project: str, mode: str) -> dict[str, str]:
 
 This repo uses Agent Ticketing OS. Treat the ticket trail as the source of truth for agent work: pick one active ticket, keep the status current, record validation, and leave the next agent enough context to continue without re-discovery.
 
+## Start Here Every Time
+
+- Read this file first.
+- Read `.tickets/BOARD.md` and `.tickets/BACKLOG.md`.
+- If using the split-board profile, read `tickets.md` and `docs/tickets/BACKLOG.md`.
+- If `.tickets/sync/linear-mcp.md` exists, read it before deciding where tickets should live.
+- Read `docs/ROADMAP.md` and `docs/PRODUCT_DECISIONS.md` when roadmap scope or durable decisions matter.
+- Read the relevant workflow doc before specialized work when it exists:
+  - `docs/TICKET_STANDARDS.md` before creating or restructuring tickets.
+  - `docs/IMPLEMENTATION_STANDARDS.md` before adding tools, abstractions, components, or shared patterns.
+  - `docs/DEAD_CODE_REMOVAL.md` before deleting code or dependencies.
+  - `docs/BRANCH_WORKFLOW.md` before branch or PR work.
+  - `docs/AGENT_COMMIT_WORKFLOW.md` before grouping, staging, or committing changes.
+  - `docs/AGENT_QA_GUIDE.md` before exploratory QA or turning reports/screenshots into tickets.
+  - `docs/WRITING_STANDARDS.md` before substantial docs, ticket, commit-message, or UI-copy changes.
+- Check `git status --short --branch` before edits and do not overwrite unrelated user changes.
+
 ## Non-Negotiable Rules
 
 - Do not start meaningful implementation without a ticket unless the user explicitly says the work is too small for one.
@@ -1457,7 +1482,7 @@ This repo uses Agent Ticketing OS. Treat the ticket trail as the source of truth
 
 ## Standard Agent Loop
 
-1. Read `.tickets/BOARD.md`, `.tickets/BACKLOG.md`, and the active ticket.
+1. Read `.tickets/BOARD.md`, `.tickets/BACKLOG.md`, and any configured tracker note under `.tickets/sync/`.
 2. If no active ticket exists, create or select one before implementation.
 3. Confirm the ticket has context, acceptance criteria, scope, and validation.
 4. Move the ticket to `in_progress` when work begins.
@@ -1469,6 +1494,7 @@ This repo uses Agent Ticketing OS. Treat the ticket trail as the source of truth
 ## Before Editing Files
 
 - Identify the active ticket id.
+- If `.tickets/sync/linear-mcp.md` exists, read it before creating or updating tickets.
 - Read any repo-specific docs under `docs/`.
 - Check the current branch and avoid protected branches for implementation work.
 - Inspect nearby code and existing conventions before adding new patterns.
@@ -1491,6 +1517,10 @@ Every handoff must include:
 - Commands run and results.
 - Known risks, blockers, or skipped validation.
 - Next recommended action.
+
+## External Trackers
+
+If `.tickets/sync/linear-mcp.md` exists, follow its source-of-truth policy. In Linear-primary mode, create or update Linear issues first and keep local tickets lightweight unless implementation detail or offline handoff requires a local record.
 """,
         "docs/TICKET_STANDARDS.md": f"""# Ticket Standards
 
@@ -1910,6 +1940,7 @@ Use Agent Ticketing OS for repo work.
 
 - Prefer natural language requests, but keep ticket records current.
 - Use one ticket per coherent outcome.
+- If `.tickets/sync/linear-mcp.md` exists, read it before deciding where tickets should live.
 - Move tickets as the work state changes.
 - Use planning mode for high-risk, multi-file, security, data, release, or architecture changes.
 - Keep handoff notes short, specific, and operational.
@@ -1926,6 +1957,102 @@ Use Agent Ticketing OS for repo work.
 - Summarize changed files and validation.
 - Mention skipped validation and risk.
 - Mention follow-up tickets.
+""",
+                "docs/IMPLEMENTATION_STANDARDS.md": """# Implementation Standards
+
+Use existing project architecture first. Add new tools, components, packages, scripts, services, or abstractions only when the active ticket requires them or the current repo cannot reasonably handle the work.
+
+## Before Building New Tooling
+
+- Search existing scripts, package commands, framework commands, CI workflows, docs, and nearby code.
+- Prefer the closest local pattern unless it conflicts with a documented decision.
+- Extend an existing pattern when it is clear and still fits the ticket.
+- Ask or document a ticket-backed reason before adding packages, generators, custom CLIs, service layers, global helpers, broad utilities, or new workflow engines.
+
+## Abstraction Rules
+
+- Add an abstraction only when it removes real duplication from current code or represents a concrete domain boundary.
+- Do not create broad `Manager`, `Helper`, `Utility`, or `Service` code just to organize files.
+- Name code after the domain object, workflow step, or UI role it performs.
+- Keep interfaces small and explicit.
+
+## Review Questions
+
+- Did I reuse existing architecture where practical?
+- Did I add new tooling only because the ticket required it?
+- Did I avoid duplicate helpers, clients, scripts, and component systems?
+- Can a future agent understand new names from filenames and exports?
+- Are new abstractions backed by current usage instead of imagined future use?
+""",
+                "docs/WRITING_STANDARDS.md": """# Writing Standards
+
+Use clear, factual writing for docs, tickets, handoffs, commit messages, UI copy, and release notes.
+
+## General Rules
+
+- Prefer short, concrete sentences.
+- Write for the next human or agent who needs to act.
+- Avoid vague phrases like "improve things", "clean up stuff", or "make it better".
+- Link to ticket ids, files, commands, and decisions when useful.
+- Do not paste long command output; summarize the result and keep the important failure text.
+
+## Tickets And Handoffs
+
+- State the goal, acceptance criteria, constraints, validation, and next step.
+- Keep implementation notes operational, not narrative.
+- Record assumptions and open questions explicitly.
+- Use follow-up tickets for deferred work instead of hiding it in prose.
+
+## Commit And PR Text
+
+- Explain what changed, why, validation run, and ticket id.
+- Mention known gaps or skipped validation.
+- Keep release notes user-facing; do not copy full ticket bodies into release notes.
+""",
+                "docs/DEAD_CODE_REMOVAL.md": """# Dead Code Removal
+
+Dead-code removal should be deliberate and ticket-backed.
+
+## Before Deleting
+
+1. Identify the active removal ticket or create one.
+2. Search for references in code, tests, docs, routes, config, CI, scripts, and generated clients.
+3. Decide whether the code is truly unused, superseded, or still needed as compatibility.
+4. Record the evidence in the ticket.
+
+## Removal Rules
+
+- Keep dead-code removal separate from feature behavior when practical.
+- Do not delete code only because it looks old.
+- Do not remove public APIs, routes, migrations, env vars, or config without a rollback note.
+- Update docs and tests in the same change when removal affects setup or behavior.
+
+## Completion
+
+- List files removed.
+- Record searches or checks run.
+- Note any follow-up tickets for uncertain areas.
+""",
+                "docs/REPO_MAP.md": f"""# Repo Map
+
+Use this document to record important repo areas and ownership boundaries for {project}.
+
+## How To Use
+
+- Add entries as the project structure becomes clear.
+- Point agents to local `AGENTS.md` files when a directory has special rules.
+- Keep this map high-level; implementation detail belongs in tickets or area docs.
+
+## Areas
+
+| Path | Purpose | Notes |
+| --- | --- | --- |
+| `.tickets/` | Agent Ticketing OS records | Ticket index, board, backlog, templates, sync hooks |
+| `docs/` | Project docs | Standards, decisions, roadmap, runbooks |
+
+## Area Agent Docs
+
+Create nested `AGENTS.md` files when a directory needs extra instructions. Good candidates include backend, frontend, mobile, tests, infrastructure, and `.github` workflows.
 """,
                 "docs/AGENT_QA_GUIDE.md": """# Agent QA Guide
 
@@ -2388,6 +2515,95 @@ When an MCP connector is available, the agent should:
 """
 
 
+def linear_setup_doc(config: dict[str, Any], linear_config: dict[str, Any]) -> str:
+    mode = linear_config["linear_mode"]
+    local_role = {
+        "repo-primary": "Local tickets are the planning source of truth. Linear mirrors stakeholder-visible work.",
+        "hybrid": "Local tickets keep implementation detail. Linear keeps stakeholder status, assignment, and visible planning.",
+        "linear-primary": "Linear is the planning source of truth. Local files should stay lightweight and reference Linear ids.",
+    }[mode]
+    labels = "\n".join(f"- `{label}`" for label in linear_config["labels"])
+    lanes = "\n".join(f"- {lane}" for lane in linear_config["work_lanes"])
+    project = linear_config["project"] or config["project"]["name"]
+    changelog = linear_config["changelog_title"]
+    return f"""# Linear Setup
+
+Team: `{linear_config["team"] or "not configured"}`
+Project: `{project}`
+Mode: `{mode}`
+Changelog: `{changelog}`
+
+## Source Of Truth
+
+{local_role}
+
+## Labels
+
+{labels}
+
+## Work Lanes
+
+{lanes}
+
+## Agent Policy
+
+- Read existing Linear projects/issues/documents before creating duplicates.
+- Create Linear issues for clear bugs, features, requests, documentation, testing, deployment work, and blockers.
+- Keep Linear issue bodies compact: problem or goal, acceptance criteria, validation expectation, and relevant repo/local ticket id.
+- Use Linear comments for status notes, handoffs, and validation summaries.
+- Keep the Linear changelog document updated after meaningful work.
+- Ask before changing project structure, work lanes, labels, priorities in bulk, or closing many issues.
+- Never store secrets, credentials, private customer data, or sensitive tokens in Linear.
+
+## Local Record Policy
+
+- `repo-primary`: create local tickets first and sync/mirror important items to Linear.
+- `hybrid`: create local tickets for implementation-heavy work and Linear issues for stakeholder-visible planning.
+- `linear-primary`: create Linear issues first; create local tickets only when implementation detail, validation evidence, or offline handoff requires it.
+
+## Boss Summary Prompt
+
+When asked where the project stands, read Linear project status, open issues, blocked issues, recent comments/status updates, and `{changelog}`. Summarize completed work, active work, blockers, important findings, and planned work in plain language.
+"""
+
+
+def cmd_linear_setup(args: argparse.Namespace) -> None:
+    root = root_path(args)
+    config = load_config(root)
+    validate_choice(args.mode, LINEAR_SETUP_MODES, "linear setup mode")
+    sync_mode = LINEAR_MODE_TO_SYNC_MODE[args.mode]
+    labels = csv_items(args.labels) or DEFAULT_LINEAR_LABELS
+    work_lanes = csv_items(args.work_lanes) or DEFAULT_LINEAR_WORK_LANES
+    project = args.project or config["project"]["name"]
+    changelog_title = args.changelog_title or f"{project} Changelog"
+    sync_root = tickets_dir(root) / "sync"
+    linear_config = {
+        "provider": "linear",
+        "mode": sync_mode,
+        "linear_mode": args.mode,
+        "team": args.team or "",
+        "project": project,
+        "external_project": project,
+        "labels": labels,
+        "work_lanes": work_lanes,
+        "changelog_title": changelog_title,
+        "create_local_mirror": args.mode != "linear-primary",
+        "enabled": True,
+        "mcp_server": args.mcp_server or "linear",
+        "id_field": "linear_id",
+        "updated": now(),
+    }
+    write_json(sync_root / "linear.json", linear_config)
+    write_if_missing(
+        sync_root / "README.md",
+        "# External Tracker Sync\n\nProvider hook files describe how agents should sync local tickets with external issue trackers when MCP tools are available.\n",
+    )
+    write_if_missing(sync_root / "linear-mcp.md", linear_setup_doc(config, linear_config), force=True)
+    config.setdefault("sync", {})["linear"] = linear_config
+    write_json(config_path(root), config)
+    print(f"Configured Linear setup in {sync_root} ({args.mode})")
+
+
 def cmd_sync_hooks(args: argparse.Namespace) -> None:
     root = root_path(args)
     config = load_config(root)
@@ -2557,6 +2773,17 @@ def build_parser() -> argparse.ArgumentParser:
     sync_hooks.add_argument("--external-project", default="")
     sync_hooks.add_argument("--mcp-server", default="")
     sync_hooks.set_defaults(func=cmd_sync_hooks)
+
+    linear_setup = sub.add_parser("linear-setup", help="Configure Linear as an external project operating layer.")
+    linear_setup.add_argument("--root", default=argparse.SUPPRESS, help="Target repository root.")
+    linear_setup.add_argument("--mode", default="repo-primary", choices=LINEAR_SETUP_MODES)
+    linear_setup.add_argument("--team", default="")
+    linear_setup.add_argument("--project", default="")
+    linear_setup.add_argument("--labels", default="", help="Comma-separated Linear labels.")
+    linear_setup.add_argument("--work-lanes", default="", help="Comma-separated Linear work lanes/milestones.")
+    linear_setup.add_argument("--changelog-title", default="")
+    linear_setup.add_argument("--mcp-server", default="")
+    linear_setup.set_defaults(func=cmd_linear_setup)
 
     doctor = sub.add_parser("doctor", help="Validate ticket state.")
     doctor.add_argument("--root", default=argparse.SUPPRESS, help="Target repository root.")

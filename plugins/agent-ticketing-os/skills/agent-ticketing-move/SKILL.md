@@ -1,6 +1,6 @@
 ---
 name: agent-ticketing-move
-description: Move or update the status of an Agent Ticketing OS ticket. Use when the user says "$agent-ticketing-move", "start T-0001", "move T-0001 to review", "mark T-0001 blocked", or changes a ticket state.
+description: Move an Agent Ticketing OS ticket.
 ---
 
 # Agent Ticketing Move
