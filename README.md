@@ -21,19 +21,45 @@ The agent should handle the ticket mechanics.
 <details open>
 <summary><strong>Codex</strong></summary>
 
-Add this repository as a Codex plugin marketplace:
+Codex installs plugins from marketplace sources that are configured in your local Codex home. This repository contains its own marketplace file, but each Codex install still needs to register the GitHub repo as a marketplace source once.
+
+Add this repository as a Codex plugin marketplace source:
 
 ```bash
 codex plugin marketplace add dwightpeaster/agent-ticketing-os
 ```
 
-Install the plugin:
+Then install the plugin from that marketplace source:
 
 ```bash
 codex plugin add agent-ticketing-os@agent-ticketing-os
 ```
 
 Restart Codex after installing.
+
+To verify:
+
+```bash
+codex plugin list
+```
+
+You should see `agent-ticketing-os@agent-ticketing-os` as `installed, enabled`.
+
+When a new release is published, refresh the configured marketplace snapshot before reinstalling/updating:
+
+```bash
+codex plugin marketplace upgrade agent-ticketing-os
+codex plugin add agent-ticketing-os@agent-ticketing-os
+```
+
+To install a specific release instead of tracking the default branch, pin the marketplace source to a tag:
+
+```bash
+codex plugin marketplace add dwightpeaster/agent-ticketing-os --ref v0.3.7
+codex plugin add agent-ticketing-os@agent-ticketing-os
+```
+
+If you pin to a release tag, future updates require changing the marketplace ref to the newer tag.
 
 By default, Codex installs plugins into your Codex home, so the plugin is available across Codex workspaces. To test or use it for only one workspace, install it with a workspace-specific `CODEX_HOME`:
 
@@ -49,7 +75,7 @@ That keeps the plugin install isolated to that local Codex home. The generated t
 If Codex says the plugin was not found, refresh the marketplace first:
 
 ```bash
-codex plugin marketplace add dwightpeaster/agent-ticketing-os
+codex plugin marketplace upgrade agent-ticketing-os
 codex plugin list
 codex plugin add agent-ticketing-os@agent-ticketing-os
 ```
