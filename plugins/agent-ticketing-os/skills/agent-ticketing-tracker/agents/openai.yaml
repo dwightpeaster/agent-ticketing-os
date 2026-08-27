@@ -1,0 +1,7 @@
+interface:
+  display_name: "Agent Ticketing Tracker"
+  short_description: "Configure optional external tracker guidance"
+  default_prompt: "Use $agent-ticketing-tracker to configure or reconcile this repository's external tracker guidance."
+
+policy:
+  allow_implicit_invocation: true

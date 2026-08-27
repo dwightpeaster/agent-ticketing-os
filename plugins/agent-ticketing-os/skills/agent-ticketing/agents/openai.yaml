@@ -1,0 +1,7 @@
+interface:
+  display_name: "Agent Ticketing"
+  short_description: "Manage local tickets, dependencies, and validation"
+  default_prompt: "Use $agent-ticketing to create or update the ticket for this work."
+
+policy:
+  allow_implicit_invocation: true

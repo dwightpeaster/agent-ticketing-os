@@ -1,0 +1,62 @@
+[
+  {
+    "prompt": "Install a local ticketing workflow in this repository.",
+    "expected_skill": "agent-ticketing-os",
+    "mutation_allowed": true
+  },
+  {
+    "prompt": "Upgrade the existing Agent Ticketing OS setup and check that it is healthy.",
+    "expected_skill": "agent-ticketing-os",
+    "mutation_allowed": true
+  },
+  {
+    "prompt": "Create a P1 bug ticket for the failing login flow.",
+    "expected_skill": "agent-ticketing",
+    "mutation_allowed": true
+  },
+  {
+    "prompt": "Show me the next dependency-clear ticket, but do not change anything.",
+    "expected_skill": "agent-ticketing",
+    "mutation_allowed": false
+  },
+  {
+    "prompt": "Is the active ticket ready to close and hand off? Do not modify it.",
+    "expected_skill": "agent-operating-review",
+    "mutation_allowed": false
+  },
+  {
+    "prompt": "Check whether this branch is ready to commit under the repository workflow.",
+    "expected_skill": "agent-operating-review",
+    "mutation_allowed": false
+  },
+  {
+    "prompt": "Start a lightweight sprint around the ready reliability tickets.",
+    "expected_skill": "agent-ticketing-sprint",
+    "mutation_allowed": true
+  },
+  {
+    "prompt": "Review the current sprint and identify carryover without closing it.",
+    "expected_skill": "agent-ticketing-sprint",
+    "mutation_allowed": false
+  },
+  {
+    "prompt": "Configure Linear as a hybrid external tracker for these local tickets.",
+    "expected_skill": "agent-ticketing-tracker",
+    "mutation_allowed": true
+  },
+  {
+    "prompt": "Compare this ticket with its linked Jira issue, but do not write to either one.",
+    "expected_skill": "agent-ticketing-tracker",
+    "mutation_allowed": false
+  },
+  {
+    "prompt": "Review this Python function for an off-by-one bug.",
+    "expected_skill": null,
+    "mutation_allowed": false
+  },
+  {
+    "prompt": "What was the score of last night's basketball game?",
+    "expected_skill": null,
+    "mutation_allowed": false
+  }
+]

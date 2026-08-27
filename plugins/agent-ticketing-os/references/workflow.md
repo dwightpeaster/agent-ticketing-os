@@ -1,80 +1,34 @@
-# Agent Ticketing Workflow
+# Ticket Workflow
 
-## Initialization Interview
+## Statuses
 
-When the user wants an in-depth setup, ask these in batches and then run `init --interactive` or write the answers into `.tickets/config.json`:
+- `inbox`: captured but not triaged.
+- `backlog`: valid, intentionally deferred.
+- `ready`: triaged and otherwise actionable; unresolved dependencies are shown separately as waiting.
+- `in_progress`: actively being implemented.
+- `review`: implementation awaits review or final verification.
+- `blocked`: progress requires external input or a prerequisite.
+- `done`: completed with resolution and validation evidence.
+- `wont_do`: intentionally closed without implementation.
 
-1. Project name and one-sentence product mission.
-2. Primary users and the jobs they need done.
-3. Repo shape: web app, mobile app, API, package, monorepo, docs, or mixed.
-4. Ticket prefix, default priority, and whether GitHub Issues should be mirrored manually.
-5. Main work lanes: product, bugs, design, repo, security, data, release, research.
-6. Agent policy: can agents implement directly, or should high-risk work require a plan first?
-7. Validation commands: tests, lint, typecheck, build, migrations, screenshots, app launch.
-8. Definition of done for bugs, features, repo changes, and design changes.
-9. Release cadence: continuous, sprint, milestone, client review, or ad hoc.
-10. Any forbidden content in tickets: secrets, customer data, contract details, private URLs.
+Use `close` rather than `move` for closed statuses. Use `reopen` to return closed work to the active workflow.
 
-## Daily Agent Loop
+## Standard And Guarded Policy
 
-1. Read `.tickets/BOARD.md`, `.tickets/BACKLOG.md`, and the target ticket.
-2. Move the ticket to `in_progress`.
-3. Implement the requested work.
-4. Update the ticket activity log with files changed, decisions, and validation.
-5. If scope changes, create follow-up tickets and link them.
-6. Move to `review` or `done` depending on the user's workflow.
-7. Run `sync` and `doctor`.
+Standard policy provides workflow guidance and warnings. Guarded policy rejects promotion or closure when required context, acceptance criteria, validation plans, or evidence are missing. Both policies reject invalid state transitions and require an explicit reason for overrides.
 
-## Readiness Rules
+## Readiness
 
-A ticket is `ready` only when it has:
+Promote a ticket to `ready` only when it has a concrete outcome, observable acceptance criteria, an area, known dependencies, and a proportional validation plan. A fixed number of questions is not required; clarity is the gate.
 
-- Problem or opportunity context.
-- Acceptance criteria that can be checked.
-- A clear area or module.
-- Priority.
-- Known dependencies or an explicit "none".
-- Validation plan.
+## Completion
 
-## Done Rules
+Before `done`, record what changed, what validation ran, its result, remaining risk, and follow-up work. Do not claim validation that did not run. Use a skipped result with a reason when a check is unavailable.
 
-A ticket can be `done` only when it has:
+## Next Work
 
-- Resolution summary.
-- Validation evidence or an explicit reason validation was skipped.
-- Any follow-up tickets created for deferred work.
-- User-facing behavior notes when behavior changed.
+`context --next` returns the working packet for the highest-priority `ready` ticket whose dependencies are all `done`. The shorter legacy `next` command returns the same selection as a one-line summary. Generated boards and sprint reports place other ready tickets under Waiting On Dependencies. Inbox and backlog triage are separate activities.
 
-## Bug Intake
+## Handoff
 
-For bugs, capture:
-
-- Expected behavior.
-- Actual behavior.
-- Reproduction steps.
-- Affected environment.
-- Severity.
-- Suspected area.
-- Regression status if known.
-
-## Repo Management Intake
-
-For repo tasks, capture:
-
-- Why this improves maintenance, delivery, reliability, or agent performance.
-- Files or systems likely affected.
-- Risk level.
-- Rollback plan for risky changes.
-- Validation commands.
-
-## Agent Handoff Notes
-
-Every ticket has an "Agent Handoff" section. Use it for:
-
-- Current hypothesis.
-- Files already inspected.
-- Commands already run.
-- Partial work status.
-- What the next agent should do first.
-
-Keep handoffs short and operational. The next agent should not need a novella to find the door.
+Record decisions, validation, blockers, and the next action. Avoid repeating the diff, pasting long logs, or writing information that is cheap to rediscover.

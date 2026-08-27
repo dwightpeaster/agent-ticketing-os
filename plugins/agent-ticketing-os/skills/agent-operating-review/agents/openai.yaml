@@ -1,0 +1,7 @@
+interface:
+  display_name: "Agent Operating Review"
+  short_description: "Check readiness, validation, and handoff state"
+  default_prompt: "Use $agent-operating-review to assess whether this work is ready for its next step."
+
+policy:
+  allow_implicit_invocation: true

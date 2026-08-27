@@ -1,7 +1,7 @@
 {
   "name": "agent-ticketing-os",
-  "version": "0.3.7",
-  "description": "Agent Ticketing OS: repo-local ticketing plus optional agent operating mode for Markdown project workflows.",
+  "version": "0.4.0",
+  "description": "Agent Ticketing OS: canonical Markdown tickets plus concise, installable agent workflows.",
   "author": {
     "name": "Dwight Peaster"
   },
@@ -16,8 +16,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Agent Ticketing OS",
-    "shortDescription": "Ticketing and agent workflow OS",
-    "longDescription": "Install ticketing only, operating mode only, or the full Agent Ticketing OS with backlog, board, sprints, sync, decisions, validation, handoffs, and agent workflow guardrails.",
+    "shortDescription": "Markdown ticketing and agent workflows",
+    "longDescription": "Install or safely upgrade canonical Markdown tickets, generated boards, branch and commit workflows, validation, handoffs, sprints, and optional external tracker guidance with one command.",
     "developerName": "Dwight Peaster",
     "category": "Productivity",
     "capabilities": [
@@ -27,7 +27,7 @@
     "defaultPrompt": [
       "$agent-ticketing-os",
       "Create a ticket for the failing login flow.",
-      "$agent-operating-init"
+      "Review whether the active ticket is ready to close."
     ],
     "brandColor": "#2563EB"
   }

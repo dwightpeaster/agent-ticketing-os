@@ -1,7 +1,6 @@
 interface:
   display_name: "Agent Ticketing OS"
-  short_description: "Install Markdown tickets and agent workflows"
-  brand_color: "#2563EB"
+  short_description: "Install or upgrade repo-local agent ticketing"
   default_prompt: "Use $agent-ticketing-os to install or safely upgrade Agent Ticketing OS in this repository."
 
 policy:
