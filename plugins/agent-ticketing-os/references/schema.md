@@ -1,50 +1,34 @@
-# Ticket Schema
+# Storage Schema
 
-Each ticket is a Markdown file in `.tickets/tickets/` with YAML-like frontmatter followed by fixed sections.
+## Authority
 
-## Required Frontmatter
+- `.tickets/tickets/*.md` files are canonical.
+- `.tickets/REGISTRY.json` is a generated index and may be rebuilt.
+- `BOARD.md`, `BACKLOG.md`, `CHANGELOG.md`, and sprint reports are generated views.
+- `.tickets/config.json` is authoritative configuration.
 
-- `id`: stable ticket id, for example `T-0007`.
-- `title`: concise human-readable title.
-- `type`: `feature`, `bug`, `change`, `repo`, `research`, `design`, or `security`.
-- `status`: `inbox`, `backlog`, `ready`, `in_progress`, `review`, `blocked`, `done`, or `wont_do`.
-- `priority`: `P0`, `P1`, `P2`, `P3`, or `P4`.
-- `area`: repo area such as `app`, `api`, `components`, `infra`, `docs`, `tests`, or `unknown`.
-- `created`: ISO timestamp.
-- `updated`: ISO timestamp.
+Never repair a ticket by editing the registry. Edit the canonical ticket or use the command engine, then run `render`.
 
-## Optional Frontmatter
+## Ticket Metadata
 
-- `severity`: bug/security severity such as `S1`, `S2`, `S3`, or `S4`.
-- `owner`: person or agent responsible.
-- `estimate`: `XS`, `S`, `M`, `L`, or `XL`.
-- `risk`: `low`, `medium`, or `high`.
-- `labels`: comma-separated labels.
-- `depends_on`: comma-separated ticket ids.
-- `blocks`: comma-separated ticket ids.
-- `source`: user, agent, GitHub, CI, audit, support, planning.
+Each ticket begins with JSON metadata between `---` delimiters. Required fields are `id`, `title`, `type`, `status`, `priority`, `area`, `created`, and `updated`. Lists such as `labels`, `depends_on`, and `blocks` are JSON arrays.
 
-## Required Sections
+Optional fields are omitted when empty or set to their normal defaults. The parser supplies `owner: agent`, `risk: medium`, `source: agent`, empty lists, and an empty external-id map in memory, so agents do not need to repeat them in every ticket.
 
-- `Context`
-- `Acceptance Criteria`
-- `Implementation Notes`
-- `Validation Plan`
-- `Agent Handoff`
-- `Activity Log`
-- `Closure`
+Optional `external_ids` map tracker providers to stable external record ids. Update them through `edit --external-id provider=id`; do not store tracker credentials or tokens.
 
-## Registry
+Required narrative sections are Context, Acceptance Criteria, Implementation Notes, Validation Plan, Validation Evidence, Agent Handoff, Activity Log, and Closure.
 
-`.tickets/REGISTRY.json` is the machine index. It stores project metadata and a summarized entry for every ticket. The Markdown ticket files remain the canonical human-readable record; the registry exists so agents can list, rank, and sync quickly.
+## Schema And Migration
 
-## ID Rules
+Configuration and registry files carry `schema_version`. Version 0.4.0 uses schema 2. The installer migrates supported schema-1 repositories after writing a backup under `.tickets/backups/`. Use `migrate --dry-run` to inspect an upgrade without changing files.
 
-- Use the configured prefix, default `T`.
-- IDs are monotonically increasing.
-- Never reuse a ticket id, even after `wont_do`.
-- Keep filenames as `<id>-<slug>.md`.
+Unknown newer schemas must be refused rather than guessed at.
 
-## Link Rules
+## IDs And Links
 
-Mention linked tickets by id in text and in frontmatter fields. If external issue trackers are used, put links in `source` or `Implementation Notes`, but keep local ticket ids primary for agent work.
+- IDs use the configured prefix and a monotonically increasing number.
+- IDs are allocated while holding the repository ticket lock.
+- Never reuse a closed ticket id.
+- Dependencies must point to existing tickets and must not form cycles.
+- An actionable dependency is satisfied only when the dependency ticket is `done`.

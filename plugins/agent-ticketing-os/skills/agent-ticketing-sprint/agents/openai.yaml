@@ -1,0 +1,7 @@
+interface:
+  display_name: "Agent Ticketing Sprint"
+  short_description: "Plan and manage a lightweight ticket sprint"
+  default_prompt: "Use $agent-ticketing-sprint to plan or update this repository's current sprint."
+
+policy:
+  allow_implicit_invocation: true

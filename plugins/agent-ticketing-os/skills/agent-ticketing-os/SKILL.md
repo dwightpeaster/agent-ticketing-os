@@ -1,56 +1,35 @@
 ---
 name: agent-ticketing-os
-description: Install the full Agent Ticketing OS.
+description: Install, upgrade, or repair Agent Ticketing OS in a repository with one command. Use when the user asks to set up the full local ticketing and agent workflow system, initialize a repository for agent work, upgrade an existing Agent Ticketing OS installation, or verify that setup is healthy.
 ---
 
 # Agent Ticketing OS
 
-Set up the complete Agent Ticketing OS: ticketing plus agent operating mode.
-
-Use this when the user wants the whole system. If the user only wants local tickets, backlog, board, sprints, and sync, use `$agent-ticketing-init`. If the user already has ticketing and only wants stricter branch, commit, PR, QA, review, release, security, and handoff rules, use `$agent-operating-init`.
-
-## Setup Options
-
-Offer these choices:
-
-- **Full OS**: ticketing plus operating mode.
-- **Ticketing only**: tickets, backlog, board, sprints, sync.
-- **Operating only**: branch, commit, PR, QA, review, release, security, and handoff guardrails on top of an existing ticketing workflow.
-
-## Workflow
-
-1. Ask whether the user wants Fast or Deep setup unless they already specified.
-2. Initialize ticketing first:
+Install the complete default system without an interview unless the user asks to customize it:
 
 ```bash
-python3 <package-root>/scripts/ticketctl.py init --root . --profile strict
+python3 <package-root>/scripts/ticketctl.py install --root .
 ```
 
-Use `--interactive` for Deep setup.
+This command is idempotent. It initializes a new repository, migrates a supported older installation with a backup, or repairs generated views without overwriting customized workflow documents.
 
-3. Run the deterministic operating layer setup:
+Use guarded policy only when the user explicitly wants enforced readiness and closure gates:
 
 ```bash
-python3 <package-root>/scripts/ticketctl.py operating-init --root . --mode fast
+python3 <package-root>/scripts/ticketctl.py install --root . --profile guarded
 ```
 
-Use `--mode deep` for Deep setup.
+Use the extended operating kit only when the user asks for QA, release, security, writing, and repository-map guidance:
 
-4. Run:
+```bash
+python3 <package-root>/scripts/ticketctl.py install --root . --operating extended
+```
+
+After installation, run the non-mutating health check:
 
 ```bash
 python3 <package-root>/scripts/ticketctl.py doctor --root .
+python3 <package-root>/scripts/ticketctl.py context --root .
 ```
 
-5. Report what was installed:
-   - ticket files
-   - operating docs
-   - sprint/sync readiness
-   - next recommended command
-
-## Rules
-
-- Do not overwrite mature existing repo instructions without permission.
-- If `.tickets/config.json` already exists, do not reinitialize ticketing unless the user explicitly asks.
-- If operating docs already exist, merge missing sections or report what would change.
-- Keep the setup public-safe and generic. Do not bake private repo names into generated files.
+Report whether the repository was created, migrated, or already current; list preserved customized files and the next useful ticket action. Do not configure an external tracker unless the user asks.
